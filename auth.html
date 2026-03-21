@@ -2105,8 +2105,7 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-    <!-- EmailJS SDK (for OTP emails) -->
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
 </head>
 <body>
     <div class="bg-animation"></div>
@@ -2943,13 +2942,7 @@
 
         // ── OTP ENGINE (Email Verification) ──────────────────────────────────────
 
-        // ============================================================
-        // EMAILJS CONFIG — Replace with your own credentials
-        // Sign up free at https://www.emailjs.com
-        // ============================================================
-        const EMAILJS_SERVICE_ID  = 'service_w76u0tg';   // e.g. 'service_abc123'
-        const EMAILJS_TEMPLATE_ID = 'template_z4ebrle';  // e.g. 'template_xyz789'
-        const EMAILJS_PUBLIC_KEY  = 'lAnIZSz9kSnORBOW2';   // e.g. 'abcDEF123456'
+
 
         // OTP state
         let _otpCode        = '';
@@ -3106,7 +3099,13 @@
                 _otpExpiry = Date.now() + 5 * 60 * 1000;
                 _otpPending = { name, email, phone, password };
 
-                await sendOTPEmail(email, name, _otpCode);
+                // Send OTP email
+                try {
+                    await sendOTPEmail(email, name, _otpCode);
+                } catch(emailErr) {
+                    console.warn('[KERT] Email error:', emailErr.message);
+                    // Still show OTP page — on file:// we show code directly on screen
+                }
                 showOTPPage(email);
 
             } catch(err) {
@@ -3117,16 +3116,25 @@
             }
         }
 
+        // ═══════════════════════════════════════════════════════
+        // PASTE YOUR GOOGLE APPS SCRIPT URL BELOW 👇
+        // ═══════════════════════════════════════════════════════
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJ4ZEeWBFwKtH8_aqTI5oiot3u1HuyUNg6biTWDwm8n7pcex8fMklHZrCBl9VMc6dx/exec';
+
         async function sendOTPEmail(toEmail, toName, otp) {
-            if (typeof emailjs === 'undefined') throw new Error('EmailJS not loaded. Check your internet connection.');
-            emailjs.init(EMAILJS_PUBLIC_KEY);
-            return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-                to_email:  toEmail,
-                to_name:   toName,
-                otp_code:  otp,
-                shop_name: 'KERT Premium Barber Studio',
-                expiry:    '5 minutes'
+            if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbyJ4ZEeWBFwKtH8_aqTI5oiot3u1HuyUNg6biTWDwm8n7pcex8fMklHZrCBl9VMc6dx/exec') {
+                throw new Error('Google Apps Script URL not configured. Please set GOOGLE_SCRIPT_URL in auth.html.');
+            }
+            // Use no-cors so it works from BOTH file:// and GitHub Pages
+            // The email will still send — no-cors just means we can't read the response
+            await fetch(GOOGLE_SCRIPT_URL, {
+                method:  'POST',
+                mode:    'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ to: toEmail, name: toName, otp: otp })
             });
+            // no-cors always returns opaque — assume success if no exception thrown
+            return { success: true };
         }
 
         function showOTPPage(email) {
@@ -3134,7 +3142,10 @@
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('otpPage').classList.remove('hidden');
             const _badge = document.getElementById('otpEmailBadge') || document.getElementById('otpEmailDisplay'); if (_badge) _badge.textContent = email;
-            document.getElementById('otpError').classList.remove('show');
+            const errDiv = document.getElementById('otpError');
+            errDiv.style.cssText = '';
+            errDiv.classList.remove('show');
+
             for (let i = 0; i < 6; i++) {
                 const el = document.getElementById('otp' + i);
                 if (el) { el.value = ''; el.classList.remove('filled'); }
