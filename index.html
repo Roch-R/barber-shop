@@ -790,7 +790,7 @@
         appId:             "1:619772569023:web:579568ddd6b108e2e52d0a"
     };
 
-    const KERT_DB_KEYS = ['users','bookings','staff','bannedUsers','schedule','vacationDates','kertHairstyles','kertGcash'];
+    const KERT_DB_KEYS = ['users','bookings','staff','bannedUsers','schedule','vacationDates','kertHairstyles','kertGcash','deletedAccounts'];
 
     const KertDB = {
         _cache:{}, _fb:null, _ready:false, _useFirebase:false,
@@ -1154,7 +1154,10 @@
                     <td>${u.phone}</td>
                     <td>${statusBadge}</td>
                     <td>${u.createdAt}</td>
-                    <td><button class="btn-small btn-ban" onclick="banUser('${u.email}','${u.name}')">🚫 Ban</button></td>
+                    <td style="display:flex;gap:0.5rem;">
+                        <button class="btn-small btn-ban" onclick="banUser('${u.email}','${u.name}')">🚫 Ban</button>
+                        <button class="btn-small" style="background:rgba(183,28,28,0.25);color:#ef5350;border:1px solid rgba(183,28,28,0.4);" onclick="deleteUserAccount('${u.email}','${u.name}','${u.id}')">🗑️ Delete</button>
+                    </td>
                 </tr>
             `;
         }).join('');
@@ -1199,6 +1202,66 @@
             admAlert(`${name || email} has been unbanned.`, 'success', 'User Unbanned ✅');
             updateBannedUsersTable(); updateDashboard();
         }, { title: 'Unban User?', icon: '✅', okText: 'Unban', cancelText: 'Cancel' });
+    }
+
+    // ═══════════════════════════════════════════
+    // DELETE USER ACCOUNT
+    // ═══════════════════════════════════════════
+    function deleteUserAccount(email, name, userId) {
+        admConfirm(
+            `Permanently delete <strong>${name}</strong>'s account? All their data will be removed.`,
+            function() {
+                // Remove from users list
+                users = users.filter(u => String(u.id) !== String(userId) && u.email !== email);
+                KertDB.setItem('users', JSON.stringify(users));
+
+                // Also remove from banned list if present
+                bannedUsers = bannedUsers.filter(b => b.email !== email);
+                KertDB.setItem('bannedUsers', JSON.stringify(bannedUsers));
+
+                // Remove their bookings
+                bookings = bookings.filter(b => b.userEmail !== email);
+                KertDB.setItem('bookings', JSON.stringify(bookings));
+
+                // Write a deletedAccounts entry so auth.html can detect it
+                let deletedList = [];
+                try {
+                    const raw = KertDB.getItem('deletedAccounts');
+                    if (raw) {
+                        const p = JSON.parse(raw);
+                        deletedList = Array.isArray(p) ? p : Object.values(p);
+                    }
+                } catch(e) {}
+                deletedList.push({
+                    email: email,
+                    name:  name,
+                    deletedAt: new Date().toLocaleString()
+                });
+                KertDB.setItem('deletedAccounts', JSON.stringify(deletedList));
+
+                updateUsersTable();
+                updateBannedUsersTable();
+                updateBookingsTable();
+                updateDashboard();
+
+                admAlert(
+                    `${name}'s account has been permanently deleted.`,
+                    'error',
+                    'Account Deleted 🗑️'
+                );
+            },
+            {
+                title:      'Delete Account?',
+                icon:       '🗑️',
+                okText:     'Delete Permanently',
+                cancelText: 'Cancel',
+                warn:       '⚠️ This cannot be undone. All bookings will also be removed.',
+                details: [
+                    { label: '👤 User',  value: name  },
+                    { label: '📧 Email', value: email }
+                ]
+            }
+        );
     }
 
     // ═══════════════════════════════════════════
@@ -1839,3 +1902,5 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeHairstyleEdit();
 });
 </script>
+</body>
+</html>
