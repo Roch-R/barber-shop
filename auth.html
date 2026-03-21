@@ -1660,6 +1660,9 @@
         }
         /* ============ END SERVICE PICKER ============ */
     </style>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
     <div class="bg-animation"></div>
@@ -2244,7 +2247,7 @@
 
         // Merge with admin overrides stored in localStorage
         function loadHairstyles() {
-            const saved = JSON.parse(localStorage.getItem('kertHairstyles')) || [];
+            const saved = JSON.parse(KertDB.getItem('kertHairstyles')) || [];
             // Merge defaults with overrides, skip deleted
             const merged = hairstylesDefault.map(def => {
                 const override = saved.find(s => s.id === def.id);
@@ -2257,24 +2260,136 @@
         }
         let hairstylesData = loadHairstyles();
 
+        // ============================================================
+        // FIREBASE CONFIG — fill in your own project values
+        // ============================================================
+        const FIREBASE_CONFIG = {
+            apiKey:            "AIzaSyDesMBn0S2_mKQwT-dcHP6oSanntLrlsn8",
+            authDomain:        "roch-1ec06.firebaseapp.com",
+            databaseURL:       "https://roch-1ec06-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId:         "roch-1ec06",
+            storageBucket:     "roch-1ec06.firebasestorage.app",
+            messagingSenderId: "619772569023",
+            appId:             "1:619772569023:web:579568ddd6b108e2e52d0a"
+        };
+
+        // ============================================================
+        // KERTDB — Global database wrapper (Firebase + localStorage fallback)
+        // ============================================================
+        const KERT_DB_KEYS = ['users','bookings','staff','bannedUsers','schedule','vacationDates','kertHairstyles','kertGcash'];
+
+        const KertDB = {
+            _cache: {},
+            _fb: null,
+            _ready: false,
+            _useFirebase: false,
+
+            async init() {
+                try {
+                    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+                    this._fb = firebase.database();
+                    // Test connection with a quick read
+                    await this._fb.ref('.info/connected').once('value');
+                    this._useFirebase = true;
+                    await this._loadAll();
+                } catch(e) {
+                    console.warn('[KertDB] Firebase failed, using localStorage:', e.message);
+                    this._useFirebase = false;
+                    this._loadFromLocal();
+                }
+                this._ready = true;
+            },
+
+            async _loadAll() {
+                const promises = KERT_DB_KEYS.map(k =>
+                    this._fb.ref(k).once('value').then(s => ({ key: k, val: s.val() }))
+                );
+                const results = await Promise.all(promises);
+                results.forEach(r => { this._cache[r.key] = r.val !== undefined ? r.val : null; });
+            },
+
+            _loadFromLocal() {
+                KERT_DB_KEYS.forEach(k => {
+                    const v = localStorage.getItem(k);
+                    this._cache[k] = v ? JSON.parse(v) : null;
+                });
+            },
+
+            getItem(key) {
+                const v = this._cache[key];
+                if (v === null || v === undefined) return null;
+                return JSON.stringify(v);
+            },
+
+            setItem(key, value) {
+                const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+                this._cache[key] = parsed;
+                if (this._useFirebase) {
+                    this._fb.ref(key).set(parsed).catch(e => console.error('[KertDB] set error:', e));
+                } else {
+                    localStorage.setItem(key, JSON.stringify(parsed));
+                }
+            },
+
+            removeItem(key) {
+                this._cache[key] = null;
+                if (this._useFirebase) {
+                    this._fb.ref(key).remove().catch(e => console.error('[KertDB] remove error:', e));
+                } else {
+                    localStorage.removeItem(key);
+                }
+            },
+
+            onValue(key, callback) {
+                if (this._useFirebase && this._fb) {
+                    this._fb.ref(key).on('value', snap => {
+                        const val = snap.val();
+                        this._cache[key] = val;
+                        callback(val);
+                    });
+                }
+            },
+
+            offValue(key) {
+                if (this._useFirebase && this._fb) {
+                    try { this._fb.ref(key).off(); } catch(e) {}
+                }
+            }
+        };
+
         // ============ BUILD servicePrices DYNAMICALLY FROM hairstylesData ============
         const servicePrices = {};
         hairstylesData.forEach(h => { servicePrices[h.name] = h.price; });
 
-        let users = JSON.parse(localStorage.getItem('users')) || [];
+        let users = [];
         let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
-        let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
-        let bannedUsers = JSON.parse(localStorage.getItem('bannedUsers')) || [];
-        let vacationDates = JSON.parse(localStorage.getItem('vacationDates')) || [];
+        let bookings = [];
+        let bannedUsers = [];
+        let vacationDates = [];
         let selectedTime = null;
         let selectedPayment = null;
 
-        window.onload = function() {
+        window.onload = async function() {
+            // Init Firebase / localStorage
+            await KertDB.init();
+
+            // Load shared data from KertDB cache
+            // Firebase stores JS arrays as objects — convert back to arrays
+            const _toArr = v => { const p = JSON.parse(v || 'null'); if (!p) return []; return Array.isArray(p) ? p : Object.values(p); };
+            users         = _toArr(KertDB.getItem('users'));
+            bookings      = _toArr(KertDB.getItem('bookings'));
+            bannedUsers   = _toArr(KertDB.getItem('bannedUsers'));
+            vacationDates = _toArr(KertDB.getItem('vacationDates'));
+
+            // Hide loading overlay
+            const overlay = document.getElementById('kertLoadingOverlay');
+            if (overlay) overlay.style.display = 'none';
+
             if (currentUser) {
                 const isBanned = bannedUsers.some(bu => bu.email === currentUser.email);
                 if (isBanned) {
                     localStorage.removeItem('currentUser');
-                    alert('❌ Your account has been banned. You cannot access this service.');
+                    alert('\u274c Your account has been banned. You cannot access this service.');
                     location.href = 'index.html';
                 } else {
                     showMainSite();
@@ -2284,6 +2399,9 @@
                     renderHairstyles('all');
                 }
             }
+
+            // Start real-time listeners (Firebase only)
+            setupFirebaseListeners();
         };
 
         function switchToLogin() {
@@ -2298,21 +2416,44 @@
             document.getElementById('registerError').classList.remove('show');
         }
 
-        function handleLogin(e) {
+        async function handleLogin(e) {
             e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
+            const email    = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
             const errorDiv = document.getElementById('loginError');
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            if (submitBtn) { submitBtn.textContent = 'Checking...'; submitBtn.disabled = true; }
+
+            // Always pull latest users & bannedUsers from Firebase before checking
+            if (KertDB._useFirebase && KertDB._fb) {
+                const [uSnap, bSnap] = await Promise.all([
+                    KertDB._fb.ref('users').once('value'),
+                    KertDB._fb.ref('bannedUsers').once('value')
+                ]);
+                users       = uSnap.val()  || [];
+                bannedUsers = bSnap.val()  || [];
+                KertDB._cache['users']       = users;
+                KertDB._cache['bannedUsers'] = bannedUsers;
+                // Also pull bookings for display
+                const boSnap = await KertDB._fb.ref('bookings').once('value');
+                bookings = boSnap.val() || [];
+                KertDB._cache['bookings'] = bookings;
+            }
+
+            if (submitBtn) { submitBtn.textContent = 'Login'; submitBtn.disabled = false; }
+
+            // Make sure users is array not object (Firebase stores arrays as objects)
+            if (!Array.isArray(users)) users = Object.values(users);
+            if (!Array.isArray(bannedUsers)) bannedUsers = Object.values(bannedUsers);
 
             const isBanned = bannedUsers.some(bu => bu.email === email);
             if (isBanned) {
-                errorDiv.textContent = '🚫 Your account has been banned and cannot access this service. Contact support.';
+                errorDiv.textContent = '🚫 Your account has been banned. Contact support.';
                 errorDiv.classList.add('show');
                 return;
             }
 
             const user = users.find(u => u.email === email && u.password === password);
-            
             if (user) {
                 currentUser = user;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
@@ -2351,6 +2492,8 @@
                 return;
             }
 
+            // Ensure users is array (Firebase may return object)
+            if (!Array.isArray(users)) users = Object.values(users);
             if (users.find(u => u.email === email)) {
                 errorDiv.textContent = '❌ Email already registered';
                 errorDiv.classList.add('show');
@@ -2373,7 +2516,7 @@
             };
 
             users.push(newUser);
-            localStorage.setItem('users', JSON.stringify(users));
+            KertDB.setItem('users', JSON.stringify(users));
             
             errorDiv.classList.remove('show');
             alert('✅ Account created! You can now login.');
@@ -2385,7 +2528,7 @@
             document.getElementById('registerPage').classList.add('hidden');
             document.getElementById('mainSite').classList.remove('hidden');
             document.getElementById('userNameDisplay').textContent = currentUser.name.split(' ')[0];
-            vacationDates = JSON.parse(localStorage.getItem('vacationDates')) || [];
+            vacationDates = JSON.parse(KertDB.getItem('vacationDates')) || [];
         }
 
         function showSection(id) {
@@ -2561,7 +2704,7 @@
         // ============ END HAIRSTYLES FUNCTIONS ============
 
         function setupVacationDatePicker() {
-            vacationDates = JSON.parse(localStorage.getItem('vacationDates')) || [];
+            vacationDates = JSON.parse(KertDB.getItem('vacationDates')) || [];
             
             const dateInput = document.getElementById('bookingDate');
             dateInput.addEventListener('change', function() {
@@ -2579,7 +2722,7 @@
         }
 
         function checkVacationDate(selectedDate) {
-            vacationDates = JSON.parse(localStorage.getItem('vacationDates')) || [];
+            vacationDates = JSON.parse(KertDB.getItem('vacationDates')) || [];
             const isVacation = vacationDates.some(v => v.date === selectedDate);
             if (isVacation) {
                 showVacationModal();
@@ -2631,7 +2774,7 @@
         };
 
         function openCustomDatePicker() {
-            vacationDates = JSON.parse(localStorage.getItem('vacationDates')) || [];
+            vacationDates = JSON.parse(KertDB.getItem('vacationDates')) || [];
             const modal = document.getElementById('customDatePickerModal');
             if (modal) {
                 modal.classList.remove('hidden');
@@ -2659,7 +2802,7 @@
         }
 
         function renderCalendar() {
-            vacationDates = JSON.parse(localStorage.getItem('vacationDates')) || [];
+            vacationDates = JSON.parse(KertDB.getItem('vacationDates')) || [];
             const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
             const currentMonth = customDatePickerState.currentMonth;
             const currentYear = customDatePickerState.currentYear;
@@ -2712,8 +2855,8 @@
                 return dayEl;
             }
             
-            const bookings_list = JSON.parse(localStorage.getItem('bookings')) || [];
-            const schedule = JSON.parse(localStorage.getItem('schedule')) || {};
+            const bookings_list = JSON.parse(KertDB.getItem('bookings')) || [];
+            const schedule = JSON.parse(KertDB.getItem('schedule')) || {};
             if (schedule.opening && schedule.closing && schedule.duration) {
                 const [openHour, openMin] = schedule.opening.split(':').map(Number);
                 const [closeHour, closeMin] = schedule.closing.split(':').map(Number);
@@ -2849,7 +2992,7 @@
             const container = document.getElementById('timeSlots');
             const selectedDate = document.getElementById('bookingDate').value;
             
-            let schedule = JSON.parse(localStorage.getItem('schedule')) || {
+            let schedule = JSON.parse(KertDB.getItem('schedule')) || {
                 opening: '08:00',
                 closing: '18:00',
                 duration: 30
@@ -2965,7 +3108,7 @@
             }
 
             bookings.push(booking);
-            localStorage.setItem('bookings', JSON.stringify(bookings));
+            KertDB.setItem('bookings', JSON.stringify(bookings));
 
             // Show custom confirmation modal
             showBookingConfirmed(booking);
@@ -3032,7 +3175,7 @@
             const userIndex = users.findIndex(u => u.id === currentUser.id);
             if (userIndex !== -1) {
                 users[userIndex] = currentUser;
-                localStorage.setItem('users', JSON.stringify(users));
+                KertDB.setItem('users', JSON.stringify(users));
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
             }
             loadUserData();
@@ -3157,7 +3300,7 @@
         let _gcashLaunchUrl = null;
 
         function openGcashModal() {
-            const gcashConfig = JSON.parse(localStorage.getItem('kertGcash')) || {};
+            const gcashConfig = JSON.parse(KertDB.getItem('kertGcash')) || {};
             const number      = gcashConfig.number      || '';
             const name        = gcashConfig.name        || 'KERT Barber Shop';
             const qrImage     = gcashConfig.qrImage     || null;
@@ -3275,66 +3418,57 @@
         // ============ END GCASH MODAL FUNCTIONS ============
 
         // ============================================================
-        // ADMIN UPDATE WATCHER — real-time localStorage change detector
+        // REAL-TIME ADMIN WATCHER — Firebase push notifications
         // ============================================================
         const _watchKeys = {
-            kertHairstyles:  { icon: '💇', label: 'Hairstyles Updated',  msg: 'The admin has updated the hairstyle menu. The page will refresh with the latest styles and prices.' },
-            schedule:        { icon: '⏰', label: 'Schedule Changed',     msg: 'The shop schedule has been updated. New time slots are now available for booking.' },
-            vacationDates:   { icon: '🏖️', label: 'Vacation Dates Changed', msg: 'The admin has updated closed/vacation dates. Please check availability before booking.' },
-            bannedUsers:     { icon: '🚫', label: 'Account Status Changed', msg: 'Your account status may have changed. The page will reload to apply the latest permissions.' },
+            kertHairstyles: { icon: '💇', label: 'Hairstyles Updated',     msg: 'Admin updated the hairstyle menu. Refreshed.' },
+            schedule:       { icon: '⏰', label: 'Schedule Changed',        msg: 'Shop schedule updated. New time slots available.' },
+            vacationDates:  { icon: '🏖️', label: 'Vacation Dates Changed', msg: 'Admin updated closed dates. Please check availability.' },
+            bannedUsers:    { icon: '🚫', label: 'Account Status Changed',  msg: 'Your account status changed.' },
         };
 
-        // Store current snapshots
-        const _watchSnapshots = {};
-        Object.keys(_watchKeys).forEach(k => {
-            _watchSnapshots[k] = localStorage.getItem(k);
-        });
+        let _watchReady = false;
 
-        function _applyAdminUpdate(key) {
-            // Re-load data
-            if (key === 'kertHairstyles') {
-                hairstylesData = loadHairstyles();
-                // Re-render hairstyles if on that tab
-                const hairstylesSection = document.getElementById('hairstyles');
-                if (hairstylesSection && hairstylesSection.classList.contains('active')) {
-                    renderHairstyles('all');
-                }
-            }
-            if (key === 'schedule') {
-                generateTimeSlots();
-            }
-            if (key === 'vacationDates') {
-                vacationDates = JSON.parse(localStorage.getItem('vacationDates')) || [];
-            }
-            if (key === 'bannedUsers') {
-                bannedUsers = JSON.parse(localStorage.getItem('bannedUsers')) || [];
-                // Check if current user got banned
-                if (currentUser && bannedUsers.some(b => b.email === currentUser.email)) {
-                    localStorage.removeItem('currentUser');
-                    showAdminUpdatePopup('🚫', 'Account Banned', 'Your account has been suspended by the admin. You will be logged out.', function() {
-                        location.href = 'index.html';
-                    });
-                    return;
-                }
-            }
-        }
+        function setupFirebaseListeners() {
+            if (!KertDB._useFirebase) return;
 
-        // Poll localStorage every 2 seconds for changes from admin
-        setInterval(function() {
-            if (!currentUser) return; // only watch when logged in
             Object.keys(_watchKeys).forEach(key => {
-                const current = localStorage.getItem(key);
-                if (current !== _watchSnapshots[key]) {
-                    _watchSnapshots[key] = current;
+                KertDB.onValue(key, function(val) {
+                    if (!_watchReady) return;
+                    KertDB._cache[key] = val;
+                    if (key === 'kertHairstyles') {
+                        hairstylesData = loadHairstyles();
+                        const hs = document.getElementById('hairstyles');
+                        if (hs && hs.classList.contains('active')) renderHairstyles('all');
+                    }
+                    if (key === 'schedule') generateTimeSlots();
+                    if (key === 'vacationDates') vacationDates = val || [];
+                    if (key === 'bannedUsers') {
+                        bannedUsers = val || [];
+                        if (currentUser && bannedUsers.some(b => b.email === currentUser.email)) {
+                            localStorage.removeItem('currentUser');
+                            showAdminUpdatePopup('🚫', 'Account Banned', 'Your account has been suspended. You will be logged out.', function() {
+                                location.href = 'index.html';
+                            });
+                            return;
+                        }
+                    }
                     const info = _watchKeys[key];
-                    _applyAdminUpdate(key);
-                    // Don't show popup for bannedUsers - handled inside _applyAdminUpdate
-                    if (key !== 'bannedUsers') {
+                    if (info && currentUser && key !== 'bannedUsers') {
                         showAdminUpdatePopup(info.icon, info.label, info.msg, null);
                     }
-                }
+                });
             });
-        }, 2000);
+
+            // Real-time bookings sync
+            KertDB.onValue('bookings', function(val) {
+                if (!_watchReady) return;
+                bookings = val || [];
+                updateBookingsDisplay();
+            });
+
+            setTimeout(() => { _watchReady = true; }, 1500);
+        }
 
         function showAdminUpdatePopup(icon, title, message, onClose) {
             // Only one popup at a time
