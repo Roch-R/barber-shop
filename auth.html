@@ -2405,7 +2405,7 @@
                 if (isBanned) {
                     localStorage.removeItem('currentUser');
                     alert('\u274c Your account has been banned. You cannot access this service.');
-                    window.location.href = window.location.pathname;
+                    window.location.href = 'public-index.html';
                 } else {
                     showMainSite();
                     loadUserData();
@@ -3216,7 +3216,7 @@
             currentUser = null;
             localStorage.removeItem('currentUser');
             // Reload auth.html (stay on same page, show login) — DO NOT go to index.html (admin!)
-            window.location.href = window.location.pathname;
+            window.location.href = 'public-index.html';
         }
 
         // ============ SERVICE PICKER MODAL FUNCTIONS ============
@@ -3477,7 +3477,7 @@
                         if (currentUser && bannedUsers.some(b => b.email === currentUser.email)) {
                             localStorage.removeItem('currentUser');
                             showAdminUpdatePopup('🚫', 'Account Banned', 'Your account has been suspended. You will be logged out.', function() {
-                                window.location.href = window.location.pathname;
+                                window.location.href = 'public-index.html';
                             });
                             return;
                         }
