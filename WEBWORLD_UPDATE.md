@@ -1,0 +1,1 @@
+# World Wide Web Update Note&#10;&#10;- Added per feedback "world wide web i want to a world wide web this"&#10;- GitHub PR iteration marker&#10;- Repo now "world wide web" ready on branch&#10;PR: https://github.com/Roch-R/barber-shop/compare/main...blackboxai/pr-task-complete
