@@ -8,11 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
             --primary: #1a1a1a;
@@ -32,301 +28,123 @@
         }
 
         .bg-animation {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 20% 50%, rgba(255, 215, 0, 0.03) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 80%, rgba(255, 165, 0, 0.03) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 0;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(255,215,0,0.03) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(255,165,0,0.03) 0%, transparent 50%);
+            pointer-events: none; z-index: 0;
             animation: float 15s ease-in-out infinite;
         }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(20px); }
-        }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(20px)} }
 
         .container {
-            position: relative;
-            z-index: 1;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 20px;
+            position: relative; z-index: 1;
+            max-width: 1400px; margin: 0 auto; padding: 0 20px;
         }
 
-        /* Navigation */
+        /* ── NAVBAR ── */
         .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 2rem 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: linear-gradient(180deg, rgba(15, 15, 15, 0.95) 0%, rgba(26, 26, 26, 0.8) 100%);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 2rem 0; position: sticky; top: 0; z-index: 100;
+            background: linear-gradient(180deg, rgba(15,15,15,0.95) 0%, rgba(26,26,26,0.8) 100%);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border-color);
         }
-
-        .nav-left {
-            display: flex;
-            gap: 3rem;
-            align-items: center;
-        }
-
+        .nav-left { display: flex; gap: 3rem; align-items: center; }
         .logo {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.8rem;
-            font-weight: 800;
-            letter-spacing: 3px;
+            font-family: 'Playfair Display', serif; font-size: 1.8rem;
+            font-weight: 800; letter-spacing: 3px;
             background: linear-gradient(135deg, #FFD700, #FFA500);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
-
-        .nav-menu {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-
+        .nav-menu { display: flex; gap: 2rem; list-style: none; }
         .nav-menu button {
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            padding: 0.5rem 0;
+            background: none; border: none; color: var(--text-primary);
+            font-family: 'Poppins', sans-serif; font-weight: 500;
+            cursor: pointer; transition: all 0.3s ease; padding: 0.5rem 0;
         }
+        .nav-menu button:hover { color: var(--accent); }
+        .nav-right { display: flex; gap: 1rem; }
 
-        .nav-menu button:hover {
-            color: var(--accent);
-        }
-
-        .nav-right {
-            display: flex;
-            gap: 1rem;
-        }
-
+        /* ── BUTTONS ── */
         .btn {
-            padding: 0.8rem 1.5rem;
-            border: none;
-            border-radius: 50px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Poppins', sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.85rem;
+            padding: 0.8rem 1.5rem; border: none; border-radius: 50px;
+            font-weight: 600; cursor: pointer; transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif; text-transform: uppercase;
+            letter-spacing: 1px; font-size: 0.85rem;
         }
-
         .btn-primary {
-            background: linear-gradient(135deg, #FFD700, #FFA500);
-            color: #000;
-            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+            background: linear-gradient(135deg, #FFD700, #FFA500); color: #000;
+            box-shadow: 0 10px 30px rgba(255,215,0,0.3);
         }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 15px 40px rgba(255,215,0,0.4); }
+        .btn-secondary { border: 2px solid var(--accent); color: var(--accent); background: transparent; }
+        .btn-secondary:hover { background: rgba(255,215,0,0.1); }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 40px rgba(255, 215, 0, 0.4);
-        }
-
-        .btn-secondary {
-            border: 2px solid var(--accent);
-            color: var(--accent);
-            background: transparent;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 215, 0, 0.1);
-        }
-
-        /* Hero Section */
-        .hero {
-            padding: 6rem 0 4rem;
-            text-align: center;
-        }
-
+        /* ── HERO ── */
+        .hero { padding: 6rem 0 4rem; text-align: center; }
         .hero h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            font-weight: 800;
-            line-height: 1.1;
+            font-family: 'Playfair Display', serif; font-size: 4rem;
+            margin-bottom: 1rem; font-weight: 800; line-height: 1.1;
         }
-
         .hero h1 span {
             background: linear-gradient(135deg, #FFD700, #FFA500);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
+        .hero p { font-size: 1.3rem; color: var(--text-secondary); margin-bottom: 2rem; }
+        .hero-buttons { display: flex; gap: 1rem; justify-content: center; margin-bottom: 4rem; }
 
-        .hero p {
-            font-size: 1.3rem;
-            color: var(--text-secondary);
-            margin-bottom: 2rem;
-        }
-
-        .hero-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            margin-bottom: 4rem;
-        }
-
-        /* Features */
+        /* ── FEATURES ── */
         .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin: 4rem 0;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px,1fr));
+            gap: 2rem; margin: 4rem 0;
         }
-
         .feature-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-color);
-            border-radius: 15px;
-            padding: 2rem;
-            text-align: center;
-            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);
+            border-radius: 15px; padding: 2rem; text-align: center; transition: all 0.3s ease;
         }
+        .feature-card:hover { border-color: var(--accent); transform: translateY(-8px); box-shadow: 0 15px 50px rgba(255,215,0,0.1); }
+        .feature-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .feature-card h3 { font-size: 1.3rem; margin-bottom: 1rem; color: var(--accent); }
+        .feature-card p { color: var(--text-secondary); line-height: 1.8; }
 
-        .feature-card:hover {
-            border-color: var(--accent);
-            transform: translateY(-8px);
-            box-shadow: 0 15px 50px rgba(255, 215, 0, 0.1);
-        }
-
-        .feature-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-        .feature-card h3 {
-            font-size: 1.3rem;
-            margin-bottom: 1rem;
-            color: var(--accent);
-        }
-
-        .feature-card p {
-            color: var(--text-secondary);
-            line-height: 1.8;
-        }
-
-        /* Services */
-        .services {
-            margin: 4rem 0;
-        }
-
-        .services h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.5rem;
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
+        /* ── SERVICES ── */
+        .services { margin: 4rem 0; }
+        .services h2 { font-family: 'Playfair Display', serif; font-size: 2.5rem; text-align: center; margin-bottom: 3rem; }
         .services h2 span {
             background: linear-gradient(135deg, #FFD700, #FFA500);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
-
-        .services-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-        }
-
+        .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap: 1.5rem; }
         .service-item {
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1.5rem;
-            text-align: center;
-            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.05); border: 2px solid var(--border-color);
+            border-radius: 12px; padding: 1.5rem; text-align: center; transition: all 0.3s ease;
         }
+        .service-item:hover { border-color: var(--accent); background: rgba(255,215,0,0.1); }
+        .service-item h3 { color: var(--accent); margin-bottom: 0.5rem; }
+        .service-item .price { font-size: 1.5rem; font-weight: 800; color: var(--accent); margin-top: 0.5rem; }
 
-        .service-item:hover {
-            border-color: var(--accent);
-            background: rgba(255, 215, 0, 0.1);
-        }
-
-        .service-item h3 {
-            color: var(--accent);
-            margin-bottom: 0.5rem;
-        }
-
-        .service-item .price {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--accent);
-            margin-top: 0.5rem;
-        }
-
-        /* CTA Section */
+        /* ── CTA ── */
         .cta-section {
-            background: rgba(255, 215, 0, 0.1);
-            border: 2px solid var(--accent);
-            border-radius: 20px;
-            padding: 4rem 2rem;
-            text-align: center;
-            margin: 4rem 0;
+            background: rgba(255,215,0,0.1); border: 2px solid var(--accent);
+            border-radius: 20px; padding: 4rem 2rem; text-align: center; margin: 4rem 0;
         }
+        .cta-section h2 { font-family: 'Playfair Display', serif; font-size: 2.5rem; margin-bottom: 1rem; }
+        .cta-section p { font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 2rem; }
 
-        .cta-section h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .cta-section p {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            margin-bottom: 2rem;
-        }
-
-        /* Footer */
+        /* ── FOOTER ── */
         footer {
-            text-align: center;
-            padding: 3rem 0;
+            text-align: center; padding: 3rem 0;
             border-top: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            margin-top: 4rem;
+            color: var(--text-secondary); margin-top: 4rem;
         }
-
-        footer p {
-            margin: 0.5rem 0;
-        }
+        footer p { margin: 0.5rem 0; }
 
         @media (max-width: 768px) {
-            .nav-menu {
-                display: none;
-            }
-
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-
-            .hero p {
-                font-size: 1rem;
-            }
-
-            .hero-buttons {
-                flex-direction: column;
-            }
-
-            .navbar {
-                flex-wrap: wrap;
-            }
+            .nav-menu { display: none; }
+            .hero h1 { font-size: 2.5rem; }
+            .hero p { font-size: 1rem; }
+            .hero-buttons { flex-direction: column; }
+            .navbar { flex-wrap: wrap; }
         }
     </style>
 </head>
@@ -339,8 +157,8 @@
             <div class="nav-left">
                 <div class="logo">✂️ KERT</div>
                 <ul class="nav-menu">
-                    <li><button onclick="document.querySelector('.hero').scrollIntoView({behavior: 'smooth'})">Home</button></li>
-                    <li><button onclick="document.querySelector('.services').scrollIntoView({behavior: 'smooth'})">Services</button></li>
+                    <li><button onclick="document.querySelector('.hero').scrollIntoView({behavior:'smooth'})">Home</button></li>
+                    <li><button onclick="document.querySelector('.services').scrollIntoView({behavior:'smooth'})">Services</button></li>
                     <li><button onclick="window.location.href='auth.html'">Booking</button></li>
                 </ul>
             </div>
@@ -350,13 +168,13 @@
             </div>
         </nav>
 
-        <!-- Hero Section -->
+        <!-- Hero -->
         <section class="hero">
             <h1>Premium <span>Barber</span> Studio</h1>
             <p>Excellence in Every Cut • Professional Barbers • Premium Service</p>
             <div class="hero-buttons">
                 <button class="btn btn-primary" onclick="window.location.href='auth.html'">Book Appointment</button>
-                <button class="btn btn-secondary" onclick="document.querySelector('.services').scrollIntoView({behavior: 'smooth'})">View Services</button>
+                <button class="btn btn-secondary" onclick="document.querySelector('.services').scrollIntoView({behavior:'smooth'})">View Services</button>
             </div>
         </section>
 
@@ -384,37 +202,37 @@
             <h2>Our <span>Services</span></h2>
             <div class="services-grid">
                 <div class="service-item">
-                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">✂️</div>
+                    <div style="font-size:2rem;margin-bottom:0.5rem;">✂️</div>
                     <h3>Regular Haircut</h3>
                     <p>Classic haircut tailored to your preference</p>
                     <div class="price">₱250</div>
                 </div>
                 <div class="service-item">
-                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚡</div>
+                    <div style="font-size:2rem;margin-bottom:0.5rem;">⚡</div>
                     <h3>Fade</h3>
                     <p>Modern fade with precision cutting</p>
                     <div class="price">₱300</div>
                 </div>
                 <div class="service-item">
-                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎯</div>
+                    <div style="font-size:2rem;margin-bottom:0.5rem;">🎯</div>
                     <h3>Undercut</h3>
                     <p>Stylish undercut with clean lines</p>
                     <div class="price">₱300</div>
                 </div>
                 <div class="service-item">
-                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">💈</div>
+                    <div style="font-size:2rem;margin-bottom:0.5rem;">💈</div>
                     <h3>Shave</h3>
                     <p>Professional straight razor shave</p>
                     <div class="price">₱150</div>
                 </div>
                 <div class="service-item">
-                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">👑</div>
+                    <div style="font-size:2rem;margin-bottom:0.5rem;">👑</div>
                     <h3>Haircut + Shave</h3>
                     <p>Complete grooming experience</p>
                     <div class="price">₱350</div>
                 </div>
                 <div class="service-item">
-                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌟</div>
+                    <div style="font-size:2rem;margin-bottom:0.5rem;">🌟</div>
                     <h3>Premium Package</h3>
                     <p>Haircut, shave, and styling</p>
                     <div class="price">₱450</div>
@@ -422,9 +240,9 @@
             </div>
         </section>
 
-        <!-- CTA Section -->
+        <!-- CTA -->
         <section class="cta-section">
-            <h2>Ready to Look <span style="color: var(--accent);">Sharp?</span></h2>
+            <h2>Ready to Look <span style="color:var(--accent);">Sharp?</span></h2>
             <p>Book your appointment today and experience premium barber service</p>
             <button class="btn btn-primary" onclick="window.location.href='auth.html'">Book Now</button>
         </section>
