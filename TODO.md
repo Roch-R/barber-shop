@@ -1,7 +1,1 @@
-# TODO: Update Code to GitHub
-
-- [x] Stage changes: `git add auth.html`
-- [x] Commit changes
-- [x] Push to GitHub
-- [x] Verify status
-- [ ] (Optional) Open PR
+# TODO: Create Pull Request for blackboxai/update branch&#10;&#10;## Steps to Complete:&#10;1. [x] Check git status and confirm no uncommitted changes (already clean)&#10;2. [ ] User authenticates GitHub CLI: `gh auth login` (interactive)&#10;3. [ ] Create PR from blackboxai/update to main using gh pr create&#10;4. [ ] Verify PR link and mark complete&#10;
