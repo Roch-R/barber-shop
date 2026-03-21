@@ -1,0 +1,3434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KERT • Premium Barber Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1a1a1a;
+            --secondary: #2d2d2d;
+            --accent: #FFD700;
+            --accent-dark: #FFA500;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --border-color: #404040;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+            color: var(--text-primary);
+        }
+
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(255, 215, 0, 0.03) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(255, 165, 0, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+            animation: float 15s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(20px); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Auth Container */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .auth-box {
+            background: var(--secondary);
+            border: 1px solid var(--border-color);
+            padding: 3rem;
+            border-radius: 20px;
+            max-width: 450px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-header p {
+            color: var(--text-secondary);
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.7rem;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input::placeholder {
+            color: rgba(176, 176, 176, 0.5);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: rgba(255, 215, 0, 0.3);
+            background: rgba(255, 215, 0, 0.03);
+            box-shadow: 0 0 12px rgba(255, 215, 0, 0.05);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(255, 215, 0, 0.3);
+        }
+
+        .error-message {
+            color: #f44336;
+            background: rgba(244, 67, 54, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            display: none;
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .auth-toggle {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .auth-toggle a {
+            color: var(--accent);
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .auth-toggle a:hover {
+            color: var(--accent-dark);
+        }
+
+        /* Main Site */
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: linear-gradient(180deg, rgba(15, 15, 15, 0.95) 0%, rgba(26, 26, 26, 0.8) 100%);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-left {
+            display: flex;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: 3px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-menu button {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 0.5rem 0;
+            font-size: 0.95rem;
+        }
+
+        .nav-menu button:hover {
+            color: var(--accent);
+        }
+
+        .nav-menu button::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #FFD700, #FFA500);
+            transition: width 0.3s ease;
+        }
+
+        .nav-menu button:hover::after {
+            width: 100%;
+        }
+
+        .nav-menu button.active {
+            color: var(--accent);
+        }
+
+        .nav-menu button.active::after {
+            width: 100%;
+        }
+
+        .nav-right {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .user-info {
+            color: var(--accent);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .logout-btn {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            border: 1px solid rgba(244, 67, 54, 0.3);
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .logout-btn:hover {
+            background: rgba(244, 67, 54, 0.3);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+            }
+
+            .navbar {
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+
+            .nav-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+
+        .content {
+            display: none;
+            padding: 4rem 0;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2.5rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 10px 40px rgba(255, 215, 0, 0.1);
+            transform: translateY(-5px);
+        }
+
+        #booking .card {
+            overflow: visible;
+            position: relative;
+        }
+
+        #booking form {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .card h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+        }
+
+        .card h3 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid var(--accent);
+            color: var(--accent);
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: auto;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        /* ============ HAIRSTYLES GALLERY STYLES ============ */
+        .hairstyles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2.5rem;
+            margin-bottom: 4rem;
+        }
+
+        .hairstyle-card {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.08), rgba(255, 165, 0, 0.03));
+            border: 1.5px solid var(--border-color);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .hairstyle-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 15px 50px rgba(255, 215, 0, 0.15);
+            transform: translateY(-8px);
+        }
+
+        .hairstyle-image {
+            width: 100%;
+            height: 280px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            border-bottom: 2px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hairstyle-image::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 215, 0, 0.05), transparent 70%);
+        }
+
+        .hairstyle-content {
+            padding: 2rem;
+        }
+
+        .hairstyle-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent);
+            margin-bottom: 0.8rem;
+        }
+
+        .hairstyle-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            min-height: 60px;
+        }
+
+        .hairstyle-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .hairstyle-price {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .hairstyle-btn {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+        }
+
+        .hairstyle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .hairstyles-filter {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.7rem 1.5rem;
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            border-color: var(--accent);
+            background: rgba(255, 215, 0, 0.2);
+            color: var(--accent);
+        }
+        /* ============ END HAIRSTYLES STYLES ============ */
+
+        .booking-card {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.05));
+            border: 2px solid var(--border-color);
+            border-radius: 15px;
+            padding: 1.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .booking-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.15);
+        }
+
+        .booking-card h3 {
+            color: var(--accent);
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+
+        .booking-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .booking-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .booking-value {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-top: 1rem;
+        }
+
+        .status-pending {
+            background: rgba(255, 165, 0, 0.2);
+            color: var(--accent-dark);
+        }
+
+        .status-confirmed {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+        }
+
+        /* Date Input Styling */
+        #bookingDate {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1.5px solid rgba(255, 215, 0, 0.3);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            z-index: 100;
+        }
+
+        #bookingDate:hover {
+            background: rgba(255, 215, 0, 0.08);
+            border-color: rgba(255, 215, 0, 0.5);
+        }
+
+        #bookingDate:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: rgba(255, 215, 0, 0.1);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.15);
+        }
+
+        #bookingDate::-webkit-calendar-picker-indicator {
+            filter: invert(1) brightness(0.8);
+            opacity: 0.7;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .time-slots {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.8rem;
+            margin-top: 1rem;
+        }
+
+        .time-slot {
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .time-slot:hover {
+            border-color: var(--accent);
+            background: rgba(255, 215, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .time-slot.selected {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border-color: var(--accent);
+            color: #000;
+            font-weight: 600;
+        }
+
+        .time-slot.unavailable {
+            background: rgba(200, 200, 200, 0.08);
+            border: 1.5px dashed rgba(200, 200, 200, 0.3);
+            color: rgba(200, 200, 200, 0.5);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .time-slot.unavailable:hover {
+            border-color: rgba(200, 200, 200, 0.3);
+            background: rgba(200, 200, 200, 0.08);
+            transform: none;
+        }
+
+        .time-slot.unavailable::after {
+            content: "BOOKED";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: rgba(200, 200, 200, 0.7);
+            background: rgba(0, 0, 0, 0.6);
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            white-space: nowrap;
+        }
+
+        .payment-method {
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-method:hover {
+            border-color: var(--accent);
+            background: rgba(255, 215, 0, 0.08);
+        }
+
+        .payment-method.selected {
+            border-color: var(--accent);
+            background: rgba(255, 215, 0, 0.15);
+            color: var(--accent);
+        }
+
+        .bookings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .time-slots {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .bookings-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .hairstyles-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Vacation Modal Styles */
+        .vacation-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 5000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease-out;
+            padding: 2rem;
+        }
+
+        .vacation-modal.active {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        .vacation-modal-content {
+            background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+            border: 3px solid #FF6B6B;
+            border-radius: 25px;
+            padding: 3rem;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(255, 107, 107, 0.3), 0 0 40px rgba(255, 107, 107, 0.2);
+            animation: slideUp 0.4s ease-out;
+            position: relative;
+            z-index: 5001;
+        }
+
+        .vacation-modal-icon {
+            font-size: 5rem;
+            margin-bottom: 1.5rem;
+            animation: float 2s ease-in-out infinite;
+            display: block;
+        }
+
+        .vacation-modal-content h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: #FF6B6B;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .vacation-modal-content p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 2.5rem;
+        }
+
+        .vacation-modal-btn {
+            background: linear-gradient(135deg, #FF6B6B, #FF4757);
+            color: #fff;
+            border: none;
+            padding: 1.2rem 3rem;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .vacation-modal-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 45px rgba(255, 107, 107, 0.4);
+            background: linear-gradient(135deg, #FF4757, #FF3838);
+        }
+
+        .vacation-modal-btn:active {
+            transform: translateY(-1px);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+            visibility: hidden !important;
+        }
+
+        /* Custom Date Picker Modal */
+        .custom-date-picker-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 6000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease-out;
+            padding: 2rem;
+        }
+
+        .custom-date-picker-modal.active {
+            display: flex !important;
+            visibility: visible !important;
+        }
+
+        .custom-date-picker-content {
+            background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+            border: 2px solid var(--accent);
+            border-radius: 25px;
+            padding: 2.5rem;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(255, 215, 0, 0.2), 0 0 50px rgba(255, 215, 0, 0.1);
+            animation: slideUp 0.4s ease-out;
+        }
+
+        .date-picker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 1rem;
+        }
+
+        .date-picker-header h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: var(--accent);
+            margin: 0;
+        }
+
+        .date-picker-close {
+            background: none;
+            border: none;
+            color: var(--accent);
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .date-picker-close:hover {
+            color: #FFA500;
+            transform: rotate(90deg);
+        }
+
+        .date-picker-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            margin-top: 2rem;
+        }
+
+        /* Calendar Section */
+        .calendar-section {
+            background: rgba(255, 215, 0, 0.05);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 15px;
+            padding: 2rem;
+        }
+
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .calendar-nav h4 {
+            font-size: 1.3rem;
+            color: var(--accent);
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .calendar-btn {
+            background: rgba(255, 215, 0, 0.2);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            color: var(--accent);
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .calendar-btn:hover {
+            background: rgba(255, 215, 0, 0.4);
+            border-color: var(--accent);
+            transform: scale(1.1);
+        }
+
+        .calendar-grid-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .calendar-grid-header div {
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 0.5rem 0;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .calendar-day:hover {
+            background: rgba(255, 215, 0, 0.15);
+            border-color: rgba(255, 215, 0, 0.3);
+            transform: scale(1.05);
+        }
+
+        .calendar-day.other-month {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .calendar-day.other-month:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: none;
+        }
+
+        .calendar-day.selected {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            font-weight: 700;
+            border-color: var(--accent);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .calendar-day.today {
+            border: 2px solid var(--accent);
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .calendar-day.booked {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: rgba(200, 200, 200, 0.1);
+            border: 1px dashed rgba(200, 200, 200, 0.3);
+        }
+
+        .calendar-day.booked:hover {
+            background: rgba(200, 200, 200, 0.1);
+            transform: none;
+        }
+
+        .calendar-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-today,
+        .btn-clear {
+            flex: 1;
+            padding: 0.8rem;
+            border: 1px solid var(--accent);
+            background: rgba(255, 215, 0, 0.1);
+            color: var(--accent);
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn-today:hover,
+        .btn-clear:hover {
+            background: rgba(255, 215, 0, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Selected Date Display */
+        .selected-date-display {
+            background: rgba(255, 215, 0, 0.05);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 15px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .selected-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .selected-date-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: var(--accent);
+            margin-bottom: 2rem;
+            font-weight: 700;
+        }
+
+        .btn-confirm {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.2);
+        }
+
+        .btn-confirm:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-confirm:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @media (max-width: 768px) {
+            .custom-date-picker-content {
+                padding: 1.5rem;
+            }
+
+            .date-picker-body {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .selected-date-value {
+                font-size: 1.8rem;
+            }
+        }
+
+        .unavailable-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 5000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease-out;
+            padding: 2rem;
+        }
+
+        .unavailable-modal.active {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        .unavailable-modal-content {
+            background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+            border: 3px solid #FF9500;
+            border-radius: 25px;
+            padding: 3rem;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(255, 149, 0, 0.3), 0 0 40px rgba(255, 149, 0, 0.2);
+            animation: slideUp 0.4s ease-out;
+            position: relative;
+            z-index: 5001;
+        }
+
+        .unavailable-modal-icon {
+            font-size: 5rem;
+            margin-bottom: 1.5rem;
+            animation: float 2s ease-in-out infinite;
+            display: block;
+        }
+
+        .unavailable-modal-content h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: #FF9500;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .unavailable-modal-content p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 2.5rem;
+        }
+
+        .unavailable-modal-btn {
+            background: linear-gradient(135deg, #FF9500, #FF7A00);
+            color: #fff;
+            border: none;
+            padding: 1.2rem 3rem;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255, 149, 0, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .unavailable-modal-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 45px rgba(255, 149, 0, 0.4);
+            background: linear-gradient(135deg, #FF7A00, #FF6B00);
+        }
+
+        .unavailable-modal-btn:active {
+            transform: translateY(-1px);
+        }
+
+        /* ============ BOOKING CONFIRMED MODAL ============ */
+        .booking-confirmed-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(12px);
+            z-index: 9000;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+        }
+        .booking-confirmed-modal.active {
+            display: flex !important;
+            animation: fadeIn 0.3s ease-out;
+        }
+        .booking-confirmed-content {
+            background: linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 100%);
+            border: 2px solid #4caf50;
+            border-radius: 28px;
+            padding: 3rem 2.5rem;
+            max-width: 460px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 30px 80px rgba(76, 175, 80, 0.25), 0 0 60px rgba(76, 175, 80, 0.1);
+            animation: confirmedBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .booking-confirmed-content::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, rgba(76,175,80,0.06) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        @keyframes confirmedBounce {
+            from { transform: scale(0.6) translateY(40px); opacity: 0; }
+            to   { transform: scale(1) translateY(0);      opacity: 1; }
+        }
+        .bc-icon-wrap {
+            width: 90px;
+            height: 90px;
+            background: radial-gradient(circle, rgba(76,175,80,0.2), rgba(76,175,80,0.05));
+            border: 2.5px solid #4caf50;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.8rem;
+            animation: bc-pop 0.5s 0.15s cubic-bezier(0.34,1.56,0.64,1) both;
+            box-shadow: 0 0 30px rgba(76,175,80,0.3);
+        }
+        @keyframes bc-pop {
+            from { transform: scale(0); opacity: 0; }
+            to   { transform: scale(1); opacity: 1; }
+        }
+        .bc-checkmark {
+            font-size: 2.8rem;
+            line-height: 1;
+        }
+        .bc-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 800;
+            color: #4caf50;
+            margin-bottom: 0.6rem;
+            animation: fadeIn 0.4s 0.25s both;
+        }
+        .bc-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 2rem;
+            animation: fadeIn 0.4s 0.35s both;
+        }
+        .bc-details {
+            background: rgba(76,175,80,0.08);
+            border: 1px solid rgba(76,175,80,0.2);
+            border-radius: 16px;
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 2rem;
+            text-align: left;
+            animation: fadeIn 0.4s 0.4s both;
+        }
+        .bc-detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.55rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            font-size: 0.88rem;
+        }
+        .bc-detail-row:last-child { border-bottom: none; }
+        .bc-detail-label { color: var(--text-secondary); }
+        .bc-detail-value { color: var(--accent); font-weight: 700; }
+        .bc-btn {
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            color: #fff;
+            border: none;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(76,175,80,0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: 100%;
+            animation: fadeIn 0.4s 0.5s both;
+        }
+        .bc-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 45px rgba(76,175,80,0.4);
+            background: linear-gradient(135deg, #66bb6a, #388e3c);
+        }
+        .bc-confetti {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #4caf50, #FFD700, #4caf50, #FFA500, #4caf50);
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+            border-radius: 28px 28px 0 0;
+        }
+        @keyframes shimmer {
+            0%   { background-position: 0% 0%; }
+            100% { background-position: 200% 0%; }
+        }
+        /* ============ END BOOKING CONFIRMED MODAL ============ */
+
+        /* ============ GCASH MODAL ============ */
+        .gcash-modal {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.88); backdrop-filter: blur(14px);
+            z-index: 9500; justify-content: center; align-items: center; padding: 1rem;
+            overflow-y: auto;
+        }
+        .gcash-modal.active { display: flex !important; animation: fadeIn 0.3s ease-out; }
+
+        .gcash-box {
+            background: linear-gradient(145deg, #1a2a1a, #0f1a0f);
+            border: 2px solid #00c73c;
+            border-radius: 22px;
+            max-width: 360px; width: 100%;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,199,60,0.2);
+            animation: confirmedBounce 0.45s cubic-bezier(0.34,1.56,0.64,1);
+            margin: auto;
+        }
+        .gcash-header {
+            background: linear-gradient(135deg, #007bff 0%, #0056d2 50%, #003d99 100%);
+            padding: 1rem 1.2rem;
+            display: flex; align-items: center; gap: 0.8rem;
+        }
+        .gcash-logo-circle {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: #fff; display: flex; align-items: center;
+            justify-content: center; font-size: 1.2rem; flex-shrink: 0;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+        .gcash-header-text h3 {
+            font-family: 'Playfair Display', serif; font-size: 1.1rem;
+            font-weight: 800; color: #fff; margin-bottom: 0.1rem;
+        }
+        .gcash-header-text p { color: rgba(255,255,255,0.7); font-size: 0.75rem; }
+
+        .gcash-body { padding: 1.2rem 1.4rem 1.4rem; }
+
+        .gcash-amount-box {
+            background: rgba(0,199,60,0.08); border: 1px solid rgba(0,199,60,0.25);
+            border-radius: 12px; padding: 0.8rem; text-align: center; margin-bottom: 1rem;
+        }
+        .gcash-amount-label { color: #b0b0b0; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.2rem; }
+        .gcash-amount-value { font-family: 'Playfair Display', serif; font-size: 1.7rem; font-weight: 800; color: #00c73c; }
+
+        .gcash-qr-area {
+            background: #fff; border-radius: 12px;
+            padding: 0.8rem; margin-bottom: 1rem; text-align: center;
+        }
+        .gcash-qr-placeholder {
+            width: 110px; height: 110px; margin: 0 auto 0.5rem;
+            background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+            border-radius: 10px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 0.3rem;
+            border: 2px dashed #ccc; color: #888; font-size: 0.75rem; font-weight: 600;
+        }
+        .gcash-qr-placeholder span:first-child { font-size: 2rem; }
+        .gcash-qr-label { color: #333; font-size: 0.78rem; font-weight: 600; }
+
+        .gcash-info-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.55rem 0; border-bottom: 1px solid rgba(255,255,255,0.07);
+            font-size: 0.82rem;
+        }
+        .gcash-info-row:last-child { border-bottom: none; }
+        .gcash-info-label { color: #b0b0b0; }
+        .gcash-info-value {
+            color: #fff; font-weight: 700;
+            display: flex; align-items: center; gap: 0.4rem;
+        }
+        .gcash-copy-btn {
+            background: rgba(0,199,60,0.15); border: 1px solid rgba(0,199,60,0.3);
+            color: #00c73c; padding: 0.15rem 0.5rem; border-radius: 5px;
+            cursor: pointer; font-size: 0.68rem; font-weight: 700;
+            transition: all 0.2s; font-family: 'Poppins', sans-serif;
+        }
+        .gcash-copy-btn:hover { background: rgba(0,199,60,0.3); }
+
+        .gcash-note {
+            background: rgba(255,193,7,0.1); border: 1px solid rgba(255,193,7,0.3);
+            border-radius: 10px; padding: 0.7rem 0.9rem; margin: 0.9rem 0;
+            font-size: 0.78rem; color: #ffc107; line-height: 1.55;
+        }
+
+        .gcash-done-btn {
+            width: 100%; padding: 0.85rem; background: linear-gradient(135deg, #00c73c, #00a832);
+            color: #fff; border: none; border-radius: 50px;
+            font-family: 'Poppins', sans-serif; font-weight: 800;
+            font-size: 0.9rem; cursor: pointer; transition: all 0.3s;
+            text-transform: uppercase; letter-spacing: 1px;
+            box-shadow: 0 8px 25px rgba(0,199,60,0.3);
+        }
+        .gcash-done-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 35px rgba(0,199,60,0.4); }
+        /* ============ END GCASH MODAL ============ */
+
+        /* ============ SERVICE PICKER TRIGGER ============ */
+        .service-picker-trigger {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1.5px solid rgba(255, 215, 0, 0.3);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        .service-picker-trigger:hover {
+            background: rgba(255, 215, 0, 0.08);
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
+        }
+        .service-picker-trigger.selected {
+            border-color: var(--accent);
+            background: rgba(255, 215, 0, 0.08);
+        }
+        .service-picker-arrow {
+            color: var(--accent);
+            font-size: 1.4rem;
+            transition: transform 0.3s ease;
+        }
+
+        /* ============ SERVICE PICKER MODAL ============ */
+        .service-picker-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(10px);
+            z-index: 8000;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            animation: fadeIn 0.25s ease-out;
+        }
+        .service-picker-modal.active {
+            display: flex !important;
+        }
+        .service-picker-content {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+            border: 2px solid var(--accent);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 780px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 30px 80px rgba(255,215,0,0.15);
+            animation: slideUp 0.35s ease-out;
+        }
+        /* Step header */
+        .spm-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.8rem 2rem 1.2rem;
+            border-bottom: 1px solid rgba(255,215,0,0.15);
+            position: sticky;
+            top: 0;
+            background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+            z-index: 1;
+            border-radius: 24px 24px 0 0;
+        }
+        .spm-header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .spm-back-btn {
+            background: rgba(255,215,0,0.1);
+            border: 1px solid rgba(255,215,0,0.3);
+            color: var(--accent);
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .spm-back-btn:hover { background: rgba(255,215,0,0.2); transform: scale(1.1); }
+        .spm-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--accent);
+            font-weight: 700;
+        }
+        .spm-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.8rem;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        .spm-close:hover { color: #f44336; background: rgba(244,67,54,0.1); transform: rotate(90deg); }
+
+        /* Breadcrumb */
+        .spm-breadcrumb {
+            padding: 0.8rem 2rem;
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .spm-breadcrumb span.crumb-active { color: var(--accent); font-weight: 600; }
+
+        /* Step body */
+        .spm-body { padding: 1.5rem 2rem 2rem; }
+
+        /* Step 1 — category cards */
+        .spm-categories {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.2rem;
+        }
+        @media (max-width: 600px) { .spm-categories { grid-template-columns: 1fr; } }
+        .spm-cat-card {
+            background: rgba(255,255,255,0.04);
+            border: 2px solid var(--border-color);
+            border-radius: 18px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .spm-cat-card:hover {
+            border-color: var(--accent);
+            background: rgba(255,215,0,0.07);
+            transform: translateY(-6px);
+            box-shadow: 0 12px 40px rgba(255,215,0,0.12);
+        }
+        .spm-cat-icon { font-size: 3rem; margin-bottom: 1rem; display: block; }
+        .spm-cat-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        .spm-cat-desc { color: var(--text-secondary); font-size: 0.82rem; line-height: 1.5; }
+        .spm-cat-count {
+            display: inline-block;
+            margin-top: 0.8rem;
+            background: rgba(255,215,0,0.12);
+            border: 1px solid rgba(255,215,0,0.25);
+            color: var(--accent);
+            border-radius: 20px;
+            padding: 0.2rem 0.8rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        /* Step 2 — service list */
+        .spm-services-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        @media (max-width: 540px) { .spm-services-grid { grid-template-columns: 1fr; } }
+        .spm-service-card {
+            background: rgba(255,255,255,0.04);
+            border: 1.5px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.3rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .spm-service-card:hover {
+            border-color: var(--accent);
+            background: rgba(255,215,0,0.07);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255,215,0,0.1);
+        }
+        .spm-service-card.selected-service {
+            border-color: var(--accent);
+            background: rgba(255,215,0,0.12);
+            box-shadow: 0 0 20px rgba(255,215,0,0.15);
+        }
+        .spm-service-emoji { font-size: 2rem; flex-shrink: 0; }
+        .spm-service-info { flex: 1; }
+        .spm-service-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            margin-bottom: 0.3rem;
+        }
+        .spm-service-desc {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+        .spm-service-price {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+        /* ============ END SERVICE PICKER ============ */
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+
+    <!-- Login Page -->
+    <div id="loginPage" class="auth-container">
+        <div class="auth-box">
+            <div class="auth-header">
+                <h1>✂️ KERT</h1>
+                <p>Login to Your Account</p>
+            </div>
+            
+            <div class="error-message" id="loginError"></div>
+
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="your@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+
+            <div class="auth-toggle">
+                Don't have an account? <a onclick="switchToRegister()">Register here</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Page -->
+    <div id="registerPage" class="auth-container hidden">
+        <div class="auth-box">
+            <div class="auth-header">
+                <h1>✂️ KERT</h1>
+                <p>Create Your Account</p>
+            </div>
+            
+            <div class="error-message" id="registerError"></div>
+
+            <form onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="registerName" placeholder="Your full name" required>
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="registerEmail" placeholder="your@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="registerPhone" placeholder="09xxxxxxxxx" inputmode="numeric" pattern="[0-9]{11}" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required title="Please enter 11 digits (e.g., 09123456789)">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="registerPassword" placeholder="••••••••" required>
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" id="registerConfirm" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Create Account</button>
+            </form>
+
+            <div class="auth-toggle">
+                Already have an account? <a onclick="switchToLogin()">Login here</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Website -->
+    <div id="mainSite" class="hidden">
+        <div class="container">
+            <nav class="navbar">
+                <div class="nav-left">
+                    <div class="logo" onclick="showSection('home')">✂️ KERT</div>
+                    <ul class="nav-menu">
+                        <li><button class="nav-link active" data-section="home" onclick="showSection('home'); updateNavActive(this)">🏠 Home</button></li>
+                        <li><button class="nav-link" data-section="hairstyles" onclick="showSection('hairstyles'); updateNavActive(this)">💇 Hairstyles</button></li>
+                        <li><button class="nav-link" data-section="booking" onclick="showSection('booking'); updateNavActive(this)">📅 New Booking</button></li>
+                        <li><button class="nav-link" data-section="myBookings" onclick="showSection('myBookings'); updateNavActive(this)">📋 My Bookings</button></li>
+                        <li><button class="nav-link" data-section="profile" onclick="showSection('profile'); updateNavActive(this)">👤 Profile</button></li>
+                    </ul>
+                </div>
+                <div class="nav-right">
+                    <span class="user-info">Welcome, <span id="userNameDisplay">User</span>!</span>
+                    <button class="logout-btn" onclick="handleLogout()">Logout</button>
+                </div>
+            </nav>
+        </div>
+
+        <div class="container">
+            <!-- Home Section -->
+            <section id="home" class="content active">
+                <div style="text-align: center; margin-bottom: 3rem;">
+                    <svg viewBox="0 0 200 200" width="120" height="120" style="filter: drop-shadow(0 10px 30px rgba(255, 215, 0, 0.3)); margin-bottom: 2rem;">
+                        <ellipse cx="100" cy="130" rx="45" ry="35" fill="none" stroke="#FFD700" stroke-width="3"/>
+                        <line x1="60" y1="60" x2="70" y2="100" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
+                        <line x1="70" y1="40" x2="75" y2="110" stroke="#FFD700" stroke-width="3"/>
+                        <line x1="80" y1="35" x2="85" y2="115" stroke="#FFD700" stroke-width="3"/>
+                        <line x1="90" y1="33" x2="95" y2="120" stroke="#FFD700" stroke-width="3"/>
+                        <line x1="100" y1="32" x2="105" y2="120" stroke="#FFD700" stroke-width="3"/>
+                        <rect x="65" y="110" width="45" height="8" rx="4" fill="none" stroke="#FFD700" stroke-width="2.5"/>
+                        <circle cx="140" cy="55" r="12" fill="none" stroke="#FFD700" stroke-width="2.5"/>
+                        <line x1="140" y1="68" x2="160" y2="95" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
+                        <circle cx="155" cy="75" r="12" fill="none" stroke="#FFD700" stroke-width="2.5"/>
+                        <line x1="155" y1="88" x2="168" y2="110" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <h1 class="section-title">Welcome to KERT Premium Barber</h1>
+                <div class="features">
+                    <div class="card">
+                        <div style="font-size: 2.5rem; margin-bottom: 1rem;">💇</div>
+                        <h3>Browse Styles</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Explore our collection of premium hairstyles</p>
+                        <button class="btn btn-secondary" onclick="showSection('hairstyles')">View Styles</button>
+                    </div>
+                    <div class="card">
+                        <div style="font-size: 2.5rem; margin-bottom: 1rem;">📅</div>
+                        <h3>Book an Appointment</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Schedule your next haircut with our professional barbers</p>
+                        <button class="btn btn-secondary" onclick="showSection('booking')">Book Now</button>
+                    </div>
+                    <div class="card">
+                        <div style="font-size: 2.5rem; margin-bottom: 1rem;">📋</div>
+                        <h3>My Bookings</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">View and manage your appointments</p>
+                        <button class="btn btn-secondary" onclick="showSection('myBookings')">View</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Hairstyles Section -->
+            <section id="hairstyles" class="content">
+                <h2 class="section-title">💇 Our Hairstyles & Cuts</h2>
+                
+                <div class="hairstyles-filter">
+                    <button class="filter-btn active" onclick="filterHairstyles(this, 'all')">All Styles</button>
+                    <button class="filter-btn" onclick="filterHairstyles(this, 'regular haircut')">Regular Haircut</button>
+                    <button class="filter-btn" onclick="filterHairstyles(this, 'haircut and shave')">Haircut & Shave</button>
+                    <button class="filter-btn" onclick="filterHairstyles(this, 'home service')">Home Service</button>
+                </div>
+
+                <div class="hairstyles-grid" id="hairstylesGrid"></div>
+            </section>
+
+            <!-- Booking Section -->
+            <section id="booking" class="content">
+                <h2 class="section-title">New Booking</h2>
+                <div class="card" style="max-width: 700px; margin: 0 auto;">
+                    <form onsubmit="bookAppointment(event)">
+                        <div class="form-group">
+                            <label>Date *</label>
+                            <input type="date" id="bookingDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Time Slot *</label>
+                            <div class="time-slots" id="timeSlots"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Service Type *</label>
+                            <!-- Hidden input stores value for form validation -->
+                            <input type="hidden" id="serviceType">
+                            <!-- Visual trigger -->
+                            <div id="servicePickerTrigger" onclick="openServicePicker()" class="service-picker-trigger">
+                                <span id="servicePickerLabel">✂️ Choose a service...</span>
+                                <span class="service-picker-arrow">›</span>
+                            </div>
+                        </div>
+                        <div style="background: rgba(255, 215, 0, 0.1); border: 1px solid var(--accent); border-radius: 10px; padding: 1rem; margin-bottom: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: var(--text-secondary); font-weight: 600;">Total Price:</span>
+                                <span style="font-size: 1.8rem; font-weight: 700; color: var(--accent);" id="priceDisplay">₱0</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Payment Method *</label>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                                <div class="payment-method" onclick="selectPayment(this, 'gcash'); openGcashModal()">
+                                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📱</div>
+                                    <div style="font-weight: 600; font-size: 0.9rem;">GCash</div>
+                                </div>
+                                <div class="payment-method" onclick="selectPayment(this, 'paypal')">
+                                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">💳</div>
+                                    <div style="font-weight: 600; font-size: 0.9rem;">PayPal</div>
+                                </div>
+                                <div class="payment-method" onclick="selectPayment(this, 'cash')">
+                                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">💵</div>
+                                    <div style="font-weight: 600; font-size: 0.9rem;">Cash</div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="selectedPayment" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1.2rem; font-size: 1.1rem; margin-top: 1rem;">Confirm Booking</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- My Bookings Section -->
+            <section id="myBookings" class="content">
+                <h2 class="section-title">My Bookings</h2>
+                <div id="bookingsGrid" class="bookings-grid"></div>
+            </section>
+
+            <!-- Profile Section -->
+            <section id="profile" class="content">
+                <h2 class="section-title">My Profile</h2>
+                <div class="card" style="max-width: 600px; margin: 0 auto;">
+                    <form onsubmit="saveProfile(event)">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="profileName" placeholder="Your name">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="profileEmail" placeholder="Your email" readonly style="opacity: 0.7;">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" id="profilePhone" placeholder="09xxxxxxxxx" inputmode="numeric" pattern="[0-9]{11}" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '')" title="Please enter 11 digits (e.g., 09123456789)">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">Save Profile</button>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Custom Date Picker Modal -->
+    <div id="customDatePickerModal" class="custom-date-picker-modal hidden">
+        <div class="custom-date-picker-content">
+            <div class="date-picker-header">
+                <h3>📅 Select Your Date</h3>
+                <button class="date-picker-close" onclick="closeCustomDatePicker()">&times;</button>
+            </div>
+            <div class="date-picker-body">
+                <div class="calendar-section">
+                    <div class="calendar-nav">
+                        <button onclick="previousMonth()" class="calendar-btn">‹</button>
+                        <h4 id="currentMonth">March 2026</h4>
+                        <button onclick="nextMonth()" class="calendar-btn">›</button>
+                    </div>
+                    <div class="calendar-grid-header">
+                        <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+                    </div>
+                    <div class="calendar-grid" id="calendarDays"></div>
+                    <div class="calendar-actions">
+                        <button onclick="goToToday()" class="btn-today">📍 Today</button>
+                        <button onclick="clearDateSelection()" class="btn-clear">🗑️ Clear</button>
+                    </div>
+                </div>
+                <div class="selected-date-display">
+                    <div class="selected-label">Selected Date</div>
+                    <div class="selected-date-value" id="selectedDateDisplay">—</div>
+                    <button onclick="confirmDateSelection()" class="btn-confirm">✓ Confirm Date</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unavailable Time Slot Modal -->
+    <div id="unavailableModal" class="unavailable-modal hidden">
+        <div class="unavailable-modal-content">
+            <div class="unavailable-modal-icon">⏰</div>
+            <h2>Time Slot Not Available</h2>
+            <p>This time slot is already booked.</p>
+            <p style="color: var(--accent); font-weight: 600; margin-top: 1rem; margin-bottom: 2rem;">Please select another time.</p>
+            <button onclick="closeUnavailableModal()" class="unavailable-modal-btn">Select Another Time</button>
+        </div>
+    </div>
+
+    <!-- Vacation Modal -->
+    <div id="vacationModal" class="vacation-modal hidden">
+        <div class="vacation-modal-content">
+            <div class="vacation-modal-icon">🚫</div>
+            <h2>Not Available</h2>
+            <p>This date is not available for booking.</p>
+            <p style="color: var(--accent); font-weight: 600; margin-top: 1rem; margin-bottom: 2rem;">The barber shop is closed on this date.</p>
+            <button onclick="closeVacationModal()" class="vacation-modal-btn">Select Another Date</button>
+        </div>
+    </div>
+
+
+    <!-- ============ BOOKING CONFIRMED MODAL ============ -->
+    <div id="bookingConfirmedModal" class="booking-confirmed-modal">
+        <div class="booking-confirmed-content">
+            <div class="bc-confetti"></div>
+            <div class="bc-icon-wrap">
+                <span class="bc-checkmark">✓</span>
+            </div>
+            <div class="bc-title">Booking Confirmed!</div>
+            <div class="bc-subtitle">Your appointment has been successfully booked.<br>We look forward to seeing you!</div>
+            <div class="bc-details">
+                <div class="bc-detail-row">
+                    <span class="bc-detail-label">📋 Service</span>
+                    <span class="bc-detail-value" id="bcService">—</span>
+                </div>
+                <div class="bc-detail-row">
+                    <span class="bc-detail-label">📅 Date</span>
+                    <span class="bc-detail-value" id="bcDate">—</span>
+                </div>
+                <div class="bc-detail-row">
+                    <span class="bc-detail-label">⏰ Time</span>
+                    <span class="bc-detail-value" id="bcTime">—</span>
+                </div>
+                <div class="bc-detail-row">
+                    <span class="bc-detail-label">💳 Payment</span>
+                    <span class="bc-detail-value" id="bcPayment">—</span>
+                </div>
+                <div class="bc-detail-row">
+                    <span class="bc-detail-label">💰 Total</span>
+                    <span class="bc-detail-value" id="bcPrice">—</span>
+                </div>
+            </div>
+            <button class="bc-btn" onclick="closeBookingConfirmed()">✓ Done</button>
+        </div>
+    </div>
+    <!-- ============ END BOOKING CONFIRMED MODAL ============ -->
+
+    <!-- ============ GCASH PAYMENT MODAL ============ -->
+    <div id="gcashModal" class="gcash-modal">
+        <div class="gcash-box">
+            <!-- Header -->
+            <div class="gcash-header">
+                <div class="gcash-logo-circle">📱</div>
+                <div class="gcash-header-text">
+                    <h3>GCash Payment</h3>
+                    <p>Send your payment to complete booking</p>
+                </div>
+                <button onclick="closeGcashModal()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:1.2rem;margin-left:auto;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">✕</button>
+            </div>
+
+            <div class="gcash-body">
+                <!-- Amount -->
+                <div class="gcash-amount-box">
+                    <div class="gcash-amount-label">Amount to Send</div>
+                    <div class="gcash-amount-value" id="gcashAmountDisplay">₱0</div>
+                </div>
+
+                <!-- AUTO REDIRECT COUNTDOWN (shows when payment link is set) -->
+                <div id="gcashRedirectBox" style="display:none;background:rgba(0,199,60,0.1);border:1.5px solid rgba(0,199,60,0.35);border-radius:12px;padding:1rem;margin-bottom:1rem;text-align:center;">
+                    <div style="font-size:1.5rem;margin-bottom:0.4rem;">🚀</div>
+                    <div style="color:#00c73c;font-weight:700;font-size:0.88rem;margin-bottom:0.3rem;">Redirecting to GCash in <span id="gcashCountdown">3</span>s...</div>
+                    <div style="color:#b0b0b0;font-size:0.75rem;margin-bottom:0.8rem;">Or tap the button below to go now</div>
+                    <button id="gcashGoNowBtn" onclick="launchGcash()" style="background:linear-gradient(135deg,#007bff,#0056d2);color:#fff;border:none;padding:0.6rem 1.5rem;border-radius:50px;font-family:'Poppins',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;width:100%;transition:all 0.3s;box-shadow:0 6px 20px rgba(0,123,255,0.3);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+                        📲 Open GCash Now
+                    </button>
+                </div>
+
+                <!-- QR Code -->
+                <div class="gcash-qr-area">
+                    <div id="gcashQrDisplay">
+                        <div class="gcash-qr-placeholder">
+                            <span>📲</span>
+                            <span>QR Code</span>
+                        </div>
+                    </div>
+                    <div class="gcash-qr-label">Scan with GCash App</div>
+                </div>
+
+                <!-- Account Info -->
+                <div style="margin-bottom:0.5rem;">
+                    <div class="gcash-info-row">
+                        <span class="gcash-info-label">📱 GCash Number</span>
+                        <span class="gcash-info-value">
+                            <span id="gcashNumber">09XX-XXX-XXXX</span>
+                            <button class="gcash-copy-btn" onclick="copyGcash('number')">Copy</button>
+                        </span>
+                    </div>
+                    <div class="gcash-info-row">
+                        <span class="gcash-info-label">👤 Account Name</span>
+                        <span class="gcash-info-value" id="gcashName">KERT Barber Shop</span>
+                    </div>
+                    <div class="gcash-info-row">
+                        <span class="gcash-info-label">💰 Amount</span>
+                        <span class="gcash-info-value" id="gcashAmountRow" style="color:#00c73c;">₱0</span>
+                    </div>
+                    <div class="gcash-info-row">
+                        <span class="gcash-info-label">🏷️ Reference</span>
+                        <span class="gcash-info-value">
+                            <span id="gcashRef">—</span>
+                            <button class="gcash-copy-btn" onclick="copyGcash('ref')">Copy</button>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Note -->
+                <div class="gcash-note">
+                    ⚠️ <strong>Important:</strong> After sending, your booking will be marked as <strong>Pending</strong>. The admin will confirm once payment is verified. Please keep your GCash receipt.
+                </div>
+
+                <button class="gcash-done-btn" onclick="closeGcashModal()">✓ I've Sent the Payment</button>
+            </div>
+        </div>
+    </div>
+    <!-- ============ END GCASH PAYMENT MODAL ============ -->
+
+    <!-- ============ SERVICE PICKER MODAL ============ -->
+    <div id="servicePickerModal" class="service-picker-modal">
+        <div class="service-picker-content">
+            <!-- Header -->
+            <div class="spm-header">
+                <div class="spm-header-left">
+                    <button id="spmBackBtn" class="spm-back-btn" onclick="spmGoBack()" style="display:none;">‹</button>
+                    <div class="spm-title" id="spmTitle">Choose a Category</div>
+                </div>
+                <button class="spm-close" onclick="closeServicePicker()">✕</button>
+            </div>
+            <!-- Breadcrumb -->
+            <div class="spm-breadcrumb" id="spmBreadcrumb">
+                <span class="crumb-active">Category</span>
+            </div>
+            <!-- Body -->
+            <div class="spm-body">
+                <!-- Step 1: Categories -->
+                <div id="spmStep1" class="spm-categories">
+                    <div class="spm-cat-card" onclick="spmSelectCategory('regular haircut')">
+                        <span class="spm-cat-icon">✂️</span>
+                        <div class="spm-cat-name">Regular Haircut</div>
+                        <div class="spm-cat-desc">Classic cuts, fades, undercuts and more — clean and precise every time.</div>
+                        <span class="spm-cat-count" id="countRegular">— styles</span>
+                    </div>
+                    <div class="spm-cat-card" onclick="spmSelectCategory('haircut and shave')">
+                        <span class="spm-cat-icon">💈</span>
+                        <div class="spm-cat-name">Haircut & Shave</div>
+                        <div class="spm-cat-desc">Complete grooming — a sharp cut paired with a precision straight-razor shave.</div>
+                        <span class="spm-cat-count" id="countShave">— styles</span>
+                    </div>
+                    <div class="spm-cat-card" onclick="spmSelectCategory('home service')">
+                        <span class="spm-cat-icon">🏠</span>
+                        <div class="spm-cat-name">Home Service</div>
+                        <div class="spm-cat-desc">Premium barber experience delivered right to your doorstep — no travel needed.</div>
+                        <span class="spm-cat-count" id="countHome">— styles</span>
+                    </div>
+                </div>
+                <!-- Step 2: Services in chosen category -->
+                <div id="spmStep2" class="spm-services-grid" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+    <!-- ============ END SERVICE PICKER MODAL ============ -->
+
+    <script>
+        // ============ HAIRSTYLES DATABASE ============
+        // Default data — admin overrides are merged from localStorage
+        const hairstylesDefault = [
+            // ── Regular Haircut ──────────────────────────────────────────
+            {
+                id: 1,
+                name: 'TUF GENT',
+                category: 'regular haircut',
+                price: 380,
+                emoji: '💼',
+                description: 'A Timeless Cut for Every Gentleman. Low-maintenance with a touch of class, perfect for the modern gentleman.'
+            },
+            {
+                id: 2,
+                name: 'TONY CUT',
+                category: 'regular haircut',
+                price: 380,
+                emoji: '✨',
+                description: 'Low-key High Impact. A modern remix of the classic military cut offering a clean, confident look without the fuss.'
+            },
+            {
+                id: 3,
+                name: 'THE BANKER CUT',
+                category: 'regular haircut',
+                price: 380,
+                emoji: '🏦',
+                description: 'Sharp Lines, Sharper Mind. Classic haircut following contours of your head for a clean, confident professional look.'
+            },
+            {
+                id: 4,
+                name: 'BASTARD CUT',
+                category: 'regular haircut',
+                price: 380,
+                emoji: '🎭',
+                description: 'Rebellious Charm. Combining iconic era with American Golden Age style for a clean, confident look with refined edge.'
+            },
+            {
+                id: 5,
+                name: 'FADE',
+                category: 'regular haircut',
+                price: 300,
+                emoji: '⚡',
+                description: 'Sharp and Clean. Smooth transition from short to shorter sides, perfect for precision and style in one cut.'
+            },
+            {
+                id: 6,
+                name: 'UNDERCUT',
+                category: 'regular haircut',
+                price: 300,
+                emoji: '🎯',
+                description: 'Bold Definition. Classic style with dramatic contrast, making a statement with clean, sharp lines and modern appeal.'
+            },
+            {
+                id: 7,
+                name: 'CREW CUT',
+                category: 'regular haircut',
+                price: 280,
+                emoji: '🎖️',
+                description: 'Classic & Timeless. Short, clean, and professional - the ultimate versatile haircut for all occasions.'
+            },
+            // ── Haircut & Shave ──────────────────────────────────────────
+            {
+                id: 8,
+                name: 'HOOLIGAN CUT',
+                category: 'haircut and shave',
+                price: 380,
+                emoji: '🎪',
+                description: 'Versatile Canvas. Classic cut with a clean straight-razor shave — confidence in every detail.'
+            },
+            {
+                id: 9,
+                name: 'BUGSY CUT',
+                category: 'haircut and shave',
+                price: 380,
+                emoji: '🌟',
+                description: 'Outlined Edge, Effortless Style. Slicked-back cut paired with a precision shave for a polished finish.'
+            },
+            {
+                id: 10,
+                name: 'SLICK BACK',
+                category: 'haircut and shave',
+                price: 380,
+                emoji: '💎',
+                description: 'Sophisticated Elegance. Sleek cut plus full straight-razor shave — perfect for formal occasions.'
+            },
+            {
+                id: 11,
+                name: 'PROFESSIONAL',
+                category: 'haircut and shave',
+                price: 350,
+                emoji: '💼',
+                description: 'Business Ready. Clean executive cut with a smooth shave — the complete grooming package for the workplace.'
+            },
+            {
+                id: 12,
+                name: 'TEXTURED TOP',
+                category: 'haircut and shave',
+                price: 350,
+                emoji: '🌊',
+                description: 'Modern Texture. Layered textured cut on top paired with a clean fade and precision shave on the sides.'
+            },
+            // ── Home Service ─────────────────────────────────────────────
+            {
+                id: 13,
+                name: 'HOME REGULAR CUT',
+                category: 'home service',
+                price: 450,
+                emoji: '🏠',
+                description: 'Classic haircut delivered to your doorstep. All tools and products brought to you — no travel required.'
+            },
+            {
+                id: 14,
+                name: 'HOME FADE',
+                category: 'home service',
+                price: 500,
+                emoji: '🚗',
+                description: 'Premium fade service at home. Our barber comes to you with full equipment for a sharp fade finish.'
+            },
+            {
+                id: 15,
+                name: 'HOME HAIRCUT + SHAVE',
+                category: 'home service',
+                price: 550,
+                emoji: '🛋️',
+                description: 'Complete grooming at your own comfort zone. Haircut and straight-razor shave, delivered at home.'
+            },
+            {
+                id: 16,
+                name: 'HOME PREMIUM PACKAGE',
+                category: 'home service',
+                price: 650,
+                emoji: '👑',
+                description: 'The full VIP experience at home. Cut, shave, and styling with premium products — all at your door.'
+            }
+        ];
+        // ============ END HAIRSTYLES DATABASE ============
+
+        // Merge with admin overrides stored in localStorage
+        function loadHairstyles() {
+            const saved = JSON.parse(localStorage.getItem('kertHairstyles')) || [];
+            // Merge defaults with overrides, skip deleted
+            const merged = hairstylesDefault.map(def => {
+                const override = saved.find(s => s.id === def.id);
+                if (override && override.deleted) return null; // deleted by admin
+                return override ? { ...def, ...override } : def;
+            }).filter(Boolean);
+            // Add custom entries (id >= 100) added by admin
+            const customs = saved.filter(s => s.id >= 100 && !s.deleted);
+            return [...merged, ...customs];
+        }
+        let hairstylesData = loadHairstyles();
+
+        // ============ BUILD servicePrices DYNAMICALLY FROM hairstylesData ============
+        const servicePrices = {};
+        hairstylesData.forEach(h => { servicePrices[h.name] = h.price; });
+
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+        let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+        let bannedUsers = JSON.parse(localStorage.getItem('bannedUsers')) || [];
+        let vacationDates = JSON.parse(localStorage.getItem('vacationDates')) || [];
+        let selectedTime = null;
+        let selectedPayment = null;
+
+        window.onload = function() {
+            if (currentUser) {
+                const isBanned = bannedUsers.some(bu => bu.email === currentUser.email);
+                if (isBanned) {
+                    localStorage.removeItem('currentUser');
+                    alert('❌ Your account has been banned. You cannot access this service.');
+                    location.href = 'index.html';
+                } else {
+                    showMainSite();
+                    loadUserData();
+                    generateTimeSlots();
+                    updateBookingsDisplay();
+                    renderHairstyles('all');
+                }
+            }
+        };
+
+        function switchToLogin() {
+            document.getElementById('registerPage').classList.add('hidden');
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('loginError').classList.remove('show');
+        }
+
+        function switchToRegister() {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('registerPage').classList.remove('hidden');
+            document.getElementById('registerError').classList.remove('show');
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginError');
+
+            const isBanned = bannedUsers.some(bu => bu.email === email);
+            if (isBanned) {
+                errorDiv.textContent = '🚫 Your account has been banned and cannot access this service. Contact support.';
+                errorDiv.classList.add('show');
+                return;
+            }
+
+            const user = users.find(u => u.email === email && u.password === password);
+            
+            if (user) {
+                currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                errorDiv.classList.remove('show');
+                showMainSite();
+                loadUserData();
+                generateTimeSlots();
+                updateBookingsDisplay();
+                renderHairstyles('all');
+            } else {
+                errorDiv.textContent = '❌ Invalid email or password';
+                errorDiv.classList.add('show');
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('registerName').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            let phoneInput = document.getElementById('registerPhone').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const confirm = document.getElementById('registerConfirm').value;
+            const errorDiv = document.getElementById('registerError');
+
+            let phone = phoneInput.replace(/\D/g, '').trim();
+            
+            if (!phone || phone.length !== 11) {
+                errorDiv.textContent = '❌ Phone number must be exactly 11 digits (e.g., 09123456789)';
+                errorDiv.classList.add('show');
+                return;
+            }
+
+            if (password !== confirm) {
+                errorDiv.textContent = '❌ Passwords do not match';
+                errorDiv.classList.add('show');
+                return;
+            }
+
+            if (users.find(u => u.email === email)) {
+                errorDiv.textContent = '❌ Email already registered';
+                errorDiv.classList.add('show');
+                return;
+            }
+
+            if (password.length < 6) {
+                errorDiv.textContent = '❌ Password must be at least 6 characters';
+                errorDiv.classList.add('show');
+                return;
+            }
+
+            const newUser = {
+                id: Date.now(),
+                name,
+                email,
+                phone,
+                password,
+                createdAt: new Date().toLocaleString()
+            };
+
+            users.push(newUser);
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            errorDiv.classList.remove('show');
+            alert('✅ Account created! You can now login.');
+            switchToLogin();
+        }
+
+        function showMainSite() {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('registerPage').classList.add('hidden');
+            document.getElementById('mainSite').classList.remove('hidden');
+            document.getElementById('userNameDisplay').textContent = currentUser.name.split(' ')[0];
+            vacationDates = JSON.parse(localStorage.getItem('vacationDates')) || [];
+        }
+
+        function showSection(id) {
+            document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('data-section') === id) {
+                    link.classList.add('active');
+                }
+            });
+            
+            if (id === 'booking') {
+                generateTimeSlots();
+                setupVacationDatePicker();
+                populateServiceDropdown(); // ← refresh dropdown when opening booking
+                document.getElementById('priceDisplay').textContent = '₱0';
+                document.getElementById('serviceType').value = '';
+                // Reset service picker trigger label
+                const label = document.getElementById('servicePickerLabel');
+                if (label) label.textContent = '✂️ Choose a service...';
+                const trigger = document.getElementById('servicePickerTrigger');
+                if (trigger) trigger.classList.remove('selected');
+            }
+            
+            window.scrollTo(0, 0);
+        }
+
+        // ============ HAIRSTYLES FUNCTIONS ============
+        function renderHairstyles(category) {
+            // Always re-load latest data (admin may have updated)
+            hairstylesData = loadHairstyles();
+            const grid = document.getElementById('hairstylesGrid');
+            let filtered = hairstylesData;
+            if (category !== 'all') filtered = hairstylesData.filter(h => h.category === category);
+
+            grid.innerHTML = filtered.map(hairstyle => {
+                const imgContent = hairstyle.image
+                    ? `<img src="${hairstyle.image}" alt="${hairstyle.name}" style="width:100%;height:100%;object-fit:cover;border-radius:0;">`
+                    : `<span style="font-size:4rem;">${hairstyle.emoji}</span>`;
+                return `
+                <div class="hairstyle-card">
+                    <div class="hairstyle-image" style="${hairstyle.image ? 'padding:0;overflow:hidden;' : ''}">${imgContent}</div>
+                    <div class="hairstyle-content">
+                        <div class="hairstyle-name">${hairstyle.name}</div>
+                        <div class="hairstyle-description">${hairstyle.description}</div>
+                        <div class="hairstyle-footer">
+                            <span class="hairstyle-price">₱${hairstyle.price}</span>
+                            <button class="hairstyle-btn" onclick="bookWithStyle('${hairstyle.name}')">Book</button>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function filterHairstyles(button, category) {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            renderHairstyles(category);
+        }
+
+        // ← Pre-selects the chosen hairstyle via the service picker modal
+        function bookWithStyle(styleName) {
+            showSection('booking');
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('data-section') === 'booking') link.classList.add('active');
+            });
+            // Find the hairstyle data and auto-confirm it
+            const h = hairstylesData.find(x => x.name === styleName);
+            if (h) {
+                setTimeout(() => spmConfirmService(h.name, h.price, h.emoji), 50);
+            }
+        }
+
+        // ============ SERVICE PICKER FUNCTIONS ============
+        function openServicePicker() {
+            // Update counts on category cards
+            const cats = ['regular haircut', 'haircut and shave', 'home service'];
+            const ids  = ['countRegular', 'countShave', 'countHome'];
+            cats.forEach((cat, i) => {
+                const n = hairstylesData.filter(h => h.category === cat).length;
+                const el = document.getElementById(ids[i]);
+                if (el) el.textContent = n + (n === 1 ? ' style' : ' styles');
+            });
+
+            // Reset to step 1
+            spmShowStep1();
+
+            const modal = document.getElementById('servicePickerModal');
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeServicePicker() {
+            document.getElementById('servicePickerModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        function spmShowStep1() {
+            document.getElementById('spmStep1').style.display = 'grid';
+            document.getElementById('spmStep2').style.display = 'none';
+            document.getElementById('spmBackBtn').style.display = 'none';
+            document.getElementById('spmTitle').textContent = 'Choose a Category';
+            document.getElementById('spmBreadcrumb').innerHTML = '<span class="crumb-active">Category</span>';
+        }
+
+        function spmGoBack() {
+            spmShowStep1();
+        }
+
+        function spmSelectCategory(category) {
+            const services = hairstylesData.filter(h => h.category === category);
+            const catLabels = {
+                'regular haircut': 'Regular Haircut',
+                'haircut and shave': 'Haircut & Shave',
+                'home service': 'Home Service'
+            };
+            const label = catLabels[category] || category;
+
+            // Build step 2 grid
+            const grid = document.getElementById('spmStep2');
+            const currentVal = document.getElementById('serviceType').value;
+            grid.innerHTML = services.map(s => `
+                <div class="spm-service-card ${currentVal === s.name ? 'selected-service' : ''}"
+                     onclick="spmPickService('${s.name}', ${s.price})">
+                    <span class="spm-service-emoji">${s.emoji}</span>
+                    <div class="spm-service-info">
+                        <div class="spm-service-name">${s.name}</div>
+                        <div class="spm-service-desc">${s.description}</div>
+                    </div>
+                    <div class="spm-service-price">₱${s.price}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('spmStep1').style.display = 'none';
+            grid.style.display = 'grid';
+            document.getElementById('spmBackBtn').style.display = 'flex';
+            document.getElementById('spmTitle').textContent = label;
+            document.getElementById('spmBreadcrumb').innerHTML =
+                '<span onclick="spmShowStep1()" style="cursor:pointer;">Category</span>' +
+                ' › <span class="crumb-active">' + label + '</span>';
+        }
+
+        function spmPickService(name, price) {
+            // Store value
+            document.getElementById('serviceType').value = name;
+
+            // Update trigger button text
+            const h = hairstylesData.find(s => s.name === name);
+            const emoji = h ? h.emoji : '✂️';
+            document.getElementById('servicePickerLabel').textContent = emoji + ' ' + name + ' — ₱' + price.toLocaleString('en-PH');
+            document.getElementById('servicePickerTrigger').classList.add('selected');
+
+            // Update price display
+            document.getElementById('priceDisplay').textContent = '₱' + price.toLocaleString('en-PH');
+
+            // Highlight selection then close
+            document.querySelectorAll('.spm-service-card').forEach(c => c.classList.remove('selected-service'));
+            event.currentTarget.classList.add('selected-service');
+
+            setTimeout(closeServicePicker, 280);
+        }
+
+        // Close on backdrop click
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('servicePickerModal');
+            if (modal && e.target === modal) closeServicePicker();
+        });
+        // ============ END SERVICE PICKER FUNCTIONS ============
+
+        // ============ END HAIRSTYLES FUNCTIONS ============
+
+        function setupVacationDatePicker() {
+            vacationDates = JSON.parse(localStorage.getItem('vacationDates')) || [];
+            
+            const dateInput = document.getElementById('bookingDate');
+            dateInput.addEventListener('change', function() {
+                if (this.value) {
+                    checkVacationDate(this.value);
+                    generateTimeSlots();
+                    setTimeout(() => {
+                        const timeSlotsElement = document.getElementById('timeSlots');
+                        if (timeSlotsElement) {
+                            timeSlotsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }, 100);
+                }
+            });
+        }
+
+        function checkVacationDate(selectedDate) {
+            vacationDates = JSON.parse(localStorage.getItem('vacationDates')) || [];
+            const isVacation = vacationDates.some(v => v.date === selectedDate);
+            if (isVacation) {
+                showVacationModal();
+                document.getElementById('bookingDate').value = '';
+                return false;
+            }
+            return true;
+        }
+
+        function showVacationModal() {
+            const modal = document.getElementById('vacationModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeVacationModal() {
+            const modal = document.getElementById('vacationModal');
+            if (modal) {
+                modal.classList.remove('active');
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('vacationModal');
+            if (modal && event.target === modal) closeVacationModal();
+            
+            const customDateModal = document.getElementById('customDatePickerModal');
+            if (customDateModal && event.target === customDateModal) closeCustomDatePicker();
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeVacationModal();
+                closeUnavailableModal();
+                closeCustomDatePicker();
+            }
+        });
+
+        // ============ CUSTOM DATE PICKER FUNCTIONS ============
+        let customDatePickerState = {
+            currentMonth: new Date().getMonth(),
+            currentYear: new Date().getFullYear(),
+            selectedDate: null
+        };
+
+        function openCustomDatePicker() {
+            vacationDates = JSON.parse(localStorage.getItem('vacationDates')) || [];
+            const modal = document.getElementById('customDatePickerModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                
+                const dateInput = document.getElementById('bookingDate');
+                if (dateInput.value) {
+                    const [year, month, day] = dateInput.value.split('-');
+                    customDatePickerState.currentYear = parseInt(year);
+                    customDatePickerState.currentMonth = parseInt(month) - 1;
+                    customDatePickerState.selectedDate = new Date(year, month - 1, day);
+                }
+                renderCalendar();
+            }
+        }
+
+        function closeCustomDatePicker() {
+            const modal = document.getElementById('customDatePickerModal');
+            if (modal) {
+                modal.classList.remove('active');
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        function renderCalendar() {
+            vacationDates = JSON.parse(localStorage.getItem('vacationDates')) || [];
+            const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            const currentMonth = customDatePickerState.currentMonth;
+            const currentYear = customDatePickerState.currentYear;
+            
+            document.getElementById('currentMonth').textContent = `${monthNames[currentMonth]} ${currentYear}`;
+            
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const daysInPrevMonth = new Date(currentYear, currentMonth, 0).getDate();
+            const calendarGrid = document.getElementById('calendarDays');
+            calendarGrid.innerHTML = '';
+            
+            for (let i = firstDay - 1; i >= 0; i--) {
+                calendarGrid.appendChild(createDayElement(daysInPrevMonth - i, true));
+            }
+            for (let day = 1; day <= daysInMonth; day++) {
+                calendarGrid.appendChild(createDayElement(day, false, currentYear, currentMonth));
+            }
+            const remainingCells = 42 - calendarGrid.children.length;
+            for (let day = 1; day <= remainingCells; day++) {
+                calendarGrid.appendChild(createDayElement(day, true));
+            }
+            updateSelectedDateDisplay();
+        }
+
+        function createDayElement(day, isOtherMonth, year, month) {
+            const dayEl = document.createElement('div');
+            dayEl.className = 'calendar-day';
+            dayEl.textContent = day;
+            
+            if (isOtherMonth) {
+                dayEl.classList.add('other-month');
+                return dayEl;
+            }
+            
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const today = new Date();
+            const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            
+            if (dateStr < todayStr) {
+                dayEl.classList.add('booked');
+                dayEl.style.cursor = 'not-allowed';
+                return dayEl;
+            }
+            if (dateStr === todayStr) dayEl.classList.add('today');
+            if (vacationDates && vacationDates.some(v => v.date === dateStr)) {
+                dayEl.classList.add('booked');
+                dayEl.title = 'Shop closed';
+                dayEl.style.cursor = 'not-allowed';
+                return dayEl;
+            }
+            
+            const bookings_list = JSON.parse(localStorage.getItem('bookings')) || [];
+            const schedule = JSON.parse(localStorage.getItem('schedule')) || {};
+            if (schedule.opening && schedule.closing && schedule.duration) {
+                const [openHour, openMin] = schedule.opening.split(':').map(Number);
+                const [closeHour, closeMin] = schedule.closing.split(':').map(Number);
+                const totalSlots = Math.floor(((closeHour * 60 + closeMin) - (openHour * 60 + openMin)) / schedule.duration);
+                if (bookings_list.filter(b => b.date === dateStr).length >= totalSlots) {
+                    dayEl.classList.add('booked');
+                    dayEl.title = 'All slots booked';
+                    dayEl.style.cursor = 'not-allowed';
+                    return dayEl;
+                }
+            }
+            
+            if (customDatePickerState.selectedDate) {
+                const s = customDatePickerState.selectedDate;
+                const selectedStr = `${s.getFullYear()}-${String(s.getMonth() + 1).padStart(2, '0')}-${String(s.getDate()).padStart(2, '0')}`;
+                if (dateStr === selectedStr) dayEl.classList.add('selected');
+            }
+            
+            if (!dayEl.classList.contains('booked')) {
+                dayEl.style.cursor = 'pointer';
+                dayEl.onclick = () => selectDate(year, month, day);
+            }
+            return dayEl;
+        }
+
+        function selectDate(year, month, day) {
+            customDatePickerState.selectedDate = new Date(year, month, day);
+            renderCalendar();
+        }
+
+        function previousMonth() {
+            if (customDatePickerState.currentMonth === 0) {
+                customDatePickerState.currentMonth = 11;
+                customDatePickerState.currentYear--;
+            } else {
+                customDatePickerState.currentMonth--;
+            }
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            if (customDatePickerState.currentMonth === 11) {
+                customDatePickerState.currentMonth = 0;
+                customDatePickerState.currentYear++;
+            } else {
+                customDatePickerState.currentMonth++;
+            }
+            renderCalendar();
+        }
+
+        function goToToday() {
+            const today = new Date();
+            customDatePickerState.currentMonth = today.getMonth();
+            customDatePickerState.currentYear = today.getFullYear();
+            customDatePickerState.selectedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            renderCalendar();
+        }
+
+        function clearDateSelection() {
+            customDatePickerState.selectedDate = null;
+            document.getElementById('bookingDate').value = '';
+            document.getElementById('selectedDateDisplay').textContent = '—';
+            renderCalendar();
+        }
+
+        function updateSelectedDateDisplay() {
+            const display = document.getElementById('selectedDateDisplay');
+            if (customDatePickerState.selectedDate) {
+                display.textContent = customDatePickerState.selectedDate.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+            } else {
+                display.textContent = '—';
+            }
+        }
+
+        function confirmDateSelection() {
+            if (customDatePickerState.selectedDate) {
+                const d = customDatePickerState.selectedDate;
+                const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                document.getElementById('bookingDate').value = dateStr;
+                generateTimeSlots();
+                setupVacationDatePicker();
+                closeCustomDatePicker();
+                setTimeout(() => {
+                    const el = document.getElementById('timeSlots');
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateInput = document.getElementById('bookingDate');
+            if (dateInput) {
+                dateInput.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    openCustomDatePicker();
+                });
+                dateInput.addEventListener('focus', function(e) {
+                    e.preventDefault();
+                    openCustomDatePicker();
+                });
+            }
+        });
+
+        function showUnavailableModal() {
+            const modal = document.getElementById('unavailableModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeUnavailableModal() {
+            const modal = document.getElementById('unavailableModal');
+            if (modal) {
+                modal.classList.remove('active');
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('unavailableModal');
+            if (modal && event.target === modal) closeUnavailableModal();
+        });
+
+        function updateNavActive(button) {
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            button.classList.add('active');
+        }
+
+        function generateTimeSlots() {
+            const container = document.getElementById('timeSlots');
+            const selectedDate = document.getElementById('bookingDate').value;
+            
+            let schedule = JSON.parse(localStorage.getItem('schedule')) || {
+                opening: '08:00',
+                closing: '18:00',
+                duration: 30
+            };
+
+            const [openHour, openMin] = schedule.opening.split(':').map(Number);
+            const [closeHour, closeMin] = schedule.closing.split(':').map(Number);
+            const duration = parseInt(schedule.duration) || 30;
+
+            const startTime = new Date();
+            startTime.setHours(openHour, openMin, 0);
+            const endTime = new Date();
+            endTime.setHours(closeHour, closeMin, 0);
+
+            const slots = [];
+            let currentTime = new Date(startTime);
+            while (currentTime < endTime) {
+                const hours = currentTime.getHours();
+                const minutes = currentTime.getMinutes();
+                const timeStr = (hours % 12 || 12).toString().padStart(2, '0') + ':' +
+                               minutes.toString().padStart(2, '0') + ' ' +
+                               (hours >= 12 ? 'PM' : 'AM');
+                slots.push(timeStr);
+                currentTime.setMinutes(currentTime.getMinutes() + duration);
+            }
+
+            if (slots.length === 0) {
+                container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-secondary);">No available slots</div>';
+                return;
+            }
+
+            const bookedTimes = getBookedTimes(selectedDate);
+            container.innerHTML = slots.map(time => {
+                const isBooked = bookedTimes.includes(time);
+                return `<div class="time-slot ${isBooked ? 'unavailable' : ''}" onclick="selectTime(this, '${time}')">${time}</div>`;
+            }).join('');
+        }
+
+        function getBookedTimes(date) {
+            return bookings.filter(b => b.date === date).map(b => b.time);
+        }
+
+        function selectTime(element, time) {
+            if (element.classList.contains('unavailable')) {
+                showUnavailableModal();
+                return;
+            }
+            document.querySelectorAll('.time-slot').forEach(slot => slot.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedTime = time;
+        }
+
+        function updatePrice(event) {
+            if (event) event.preventDefault();
+            const serviceSelect = document.getElementById('serviceType');
+            const service = serviceSelect ? serviceSelect.value : '';
+            const price = (service && servicePrices[service]) ? servicePrices[service] : 0;
+            const priceDisplay = document.getElementById('priceDisplay');
+            if (priceDisplay) {
+                priceDisplay.textContent = price === 0 ? '₱0' : '₱' + price.toLocaleString('en-PH');
+            }
+        }
+
+        function selectPayment(element, method) {
+            document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedPayment = method;
+            document.getElementById('selectedPayment').value = method;
+        }
+
+        function bookAppointment(e) {
+            e.preventDefault();
+            
+            if (!selectedTime) {
+                alert('⏰ Please select a time slot');
+                return;
+            }
+            if (!selectedPayment) {
+                alert('💳 Please select a payment method');
+                return;
+            }
+            if (!currentUser) {
+                alert('❌ Error: User not logged in');
+                return;
+            }
+
+            const booking = {
+                id: Date.now(),
+                userId: currentUser.id || '',
+                userEmail: currentUser.email || '',
+                userName: currentUser.name || 'Guest',
+                userPhone: currentUser.phone || '',
+                date: document.getElementById('bookingDate').value,
+                time: selectedTime,
+                service: document.getElementById('serviceType').value,
+                price: servicePrices[document.getElementById('serviceType').value] || 0,
+                paymentMethod: selectedPayment,
+                status: 'pending',
+                createdAt: new Date().toLocaleString()
+            };
+
+            if (!booking.date || !booking.time || !booking.service || !booking.paymentMethod) {
+                alert('❌ Please fill all required fields');
+                return;
+            }
+
+            const bookingDate = new Date(booking.date);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (bookingDate < today) {
+                alert('❌ Cannot book on past dates');
+                return;
+            }
+
+            bookings.push(booking);
+            localStorage.setItem('bookings', JSON.stringify(bookings));
+
+            // Show custom confirmation modal
+            showBookingConfirmed(booking);
+
+            document.querySelector('#booking form').reset();
+            selectedTime = null;
+            selectedPayment = null;
+            document.getElementById('priceDisplay').textContent = '₱0';
+            document.getElementById('serviceType').value = '';
+            document.getElementById('servicePickerLabel').textContent = '✂️ Choose a service...';
+            document.getElementById('servicePickerTrigger').classList.remove('selected');
+            document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
+            document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+        }
+
+        function updateBookingsDisplay() {
+            const grid = document.getElementById('bookingsGrid');
+            const userBookings = bookings.filter(b => b.userId === currentUser.id);
+
+            if (userBookings.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: var(--text-secondary);">No bookings yet. <a onclick="showSection(\'booking\')" style="color: var(--accent); cursor: pointer; font-weight: 600;">Book now!</a></div>';
+                return;
+            }
+
+            grid.innerHTML = userBookings.map(b => `
+                <div class="booking-card">
+                    <h3>${b.service}</h3>
+                    <div class="booking-detail">
+                        <span class="booking-label">Date</span>
+                        <span class="booking-value">${new Date(b.date).toLocaleDateString()}</span>
+                    </div>
+                    <div class="booking-detail">
+                        <span class="booking-label">Time</span>
+                        <span class="booking-value">${b.time}</span>
+                    </div>
+                    <div class="booking-detail">
+                        <span class="booking-label">Payment</span>
+                        <span class="booking-value">${b.paymentMethod.toUpperCase()}</span>
+                    </div>
+                    <div class="booking-detail">
+                        <span class="booking-label">Price</span>
+                        <span class="booking-value">₱${b.price}</span>
+                    </div>
+                    <span class="status-badge status-${b.status}">${b.status}</span>
+                </div>
+            `).join('');
+        }
+
+        function loadUserData() {
+            document.getElementById('profileName').value = currentUser.name || '';
+            document.getElementById('profileEmail').value = currentUser.email || '';
+            document.getElementById('profilePhone').value = (currentUser.phone || '').replace(/\D/g, '').trim();
+        }
+
+        function saveProfile(e) {
+            e.preventDefault();
+            currentUser.name = document.getElementById('profileName').value.trim();
+            let cleanPhone = document.getElementById('profilePhone').value.trim().replace(/\D/g, '');
+            if (cleanPhone && cleanPhone.length !== 11) {
+                alert('❌ Phone number must be exactly 11 digits (e.g., 09123456789)');
+                return;
+            }
+            currentUser.phone = cleanPhone;
+            const userIndex = users.findIndex(u => u.id === currentUser.id);
+            if (userIndex !== -1) {
+                users[userIndex] = currentUser;
+                localStorage.setItem('users', JSON.stringify(users));
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            }
+            loadUserData();
+            alert('✅ Profile saved successfully!');
+        }
+
+        function handleLogout() {
+            if (confirm('Logout?')) {
+                currentUser = null;
+                localStorage.removeItem('currentUser');
+                location.href = 'index.html';
+            }
+        }
+
+        // ============ SERVICE PICKER MODAL FUNCTIONS ============
+        function openServicePicker() {
+            const cats = ['regular haircut', 'haircut and shave', 'home service'];
+            const countIds = ['countRegular', 'countShave', 'countHome'];
+            cats.forEach((cat, i) => {
+                const n = hairstylesData.filter(h => h.category === cat).length;
+                const el = document.getElementById(countIds[i]);
+                if (el) el.textContent = n + (n === 1 ? ' style' : ' styles');
+            });
+            spmShowStep1();
+            const modal = document.getElementById('servicePickerModal');
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeServicePicker() {
+            document.getElementById('servicePickerModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        function spmShowStep1() {
+            document.getElementById('spmStep1').style.display = 'grid';
+            document.getElementById('spmStep2').style.display = 'none';
+            document.getElementById('spmTitle').textContent = 'Choose a Category';
+            document.getElementById('spmBackBtn').style.display = 'none';
+            document.getElementById('spmBreadcrumb').innerHTML = '<span class="crumb-active">Category</span>';
+        }
+
+        function spmSelectCategory(category) {
+            const labels = { 'regular haircut': 'Regular Haircut', 'haircut and shave': 'Haircut & Shave', 'home service': 'Home Service' };
+            document.getElementById('spmTitle').textContent = labels[category];
+            document.getElementById('spmBackBtn').style.display = 'flex';
+            document.getElementById('spmBreadcrumb').innerHTML =
+                `<span style="cursor:pointer;color:var(--text-secondary);" onclick="spmGoBack()">Category</span>
+                 <span style="color:var(--text-secondary);">›</span>
+                 <span class="crumb-active">${labels[category]}</span>`;
+            const filtered = hairstylesData.filter(h => h.category === category);
+            const grid = document.getElementById('spmStep2');
+            grid.innerHTML = filtered.map(h => {
+                const imgOrEmoji = h.image
+                    ? `<img src="${h.image}" alt="${h.name}" style="width:48px;height:48px;object-fit:cover;border-radius:8px;flex-shrink:0;">`
+                    : `<span class="spm-service-emoji">${h.emoji}</span>`;
+                return `
+                <div class="spm-service-card" onclick="spmConfirmService('${h.name.replace(/'/g,"&#39;")}', ${h.price}, '${h.emoji}')">
+                    ${imgOrEmoji}
+                    <div class="spm-service-info">
+                        <div class="spm-service-name">${h.name}</div>
+                        <div class="spm-service-desc">${h.description}</div>
+                    </div>
+                    <div class="spm-service-price">&#8369;${h.price}</div>
+                </div>`;
+            }).join('');
+            document.getElementById('spmStep1').style.display = 'none';
+            grid.style.display = 'grid';
+            document.querySelector('.service-picker-content').scrollTop = 0;
+        }
+
+        function spmGoBack() { spmShowStep1(); }
+
+        function spmConfirmService(name, price, emoji) {
+            document.getElementById('serviceType').value = name;
+            const label = document.getElementById('servicePickerLabel');
+            if (label) label.textContent = emoji + ' ' + name + ' — &#8369;' + price;
+            label.innerHTML = `${emoji} ${name} &mdash; &#8369;${price}`;
+            const trigger = document.getElementById('servicePickerTrigger');
+            if (trigger) trigger.classList.add('selected');
+            const priceDisplay = document.getElementById('priceDisplay');
+            if (priceDisplay) priceDisplay.textContent = '&#8369;' + price.toLocaleString('en-PH');
+            priceDisplay.innerHTML = '&#8369;' + price.toLocaleString('en-PH');
+            closeServicePicker();
+        }
+
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('servicePickerModal');
+            if (modal && e.target === modal) closeServicePicker();
+        });
+        // ============ END SERVICE PICKER ============
+        // ============ BOOKING CONFIRMED MODAL FUNCTIONS ============
+        function showBookingConfirmed(booking) {
+            // Populate detail rows
+            document.getElementById('bcService').textContent  = booking.service || '—';
+            document.getElementById('bcDate').textContent     = new Date(booking.date).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+            document.getElementById('bcTime').textContent     = booking.time || '—';
+            document.getElementById('bcPayment').textContent  = (booking.paymentMethod || '—').toUpperCase();
+            document.getElementById('bcPrice').textContent    = '₱' + (booking.price || 0).toLocaleString('en-PH');
+
+            const modal = document.getElementById('bookingConfirmedModal');
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeBookingConfirmed() {
+            const modal = document.getElementById('bookingConfirmedModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            updateBookingsDisplay();
+            showSection('home');
+        }
+
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('bookingConfirmedModal');
+            if (modal && e.target === modal) closeBookingConfirmed();
+        });
+        // ============ END BOOKING CONFIRMED MODAL FUNCTIONS ============
+
+        // ============ GCASH MODAL FUNCTIONS ============
+        let _gcashCountdownTimer = null;
+        let _gcashLaunchUrl = null;
+
+        function openGcashModal() {
+            const gcashConfig = JSON.parse(localStorage.getItem('kertGcash')) || {};
+            const number      = gcashConfig.number      || '';
+            const name        = gcashConfig.name        || 'KERT Barber Shop';
+            const qrImage     = gcashConfig.qrImage     || null;
+            const paymentLink = gcashConfig.paymentLink || '';
+
+            const priceText = document.getElementById('priceDisplay').textContent || '₱0';
+            const priceNum  = parseInt(priceText.replace(/[^\d]/g,'')) || 0;
+
+            const ref = 'KERT-' + Date.now().toString().slice(-6);
+
+            document.getElementById('gcashAmountDisplay').textContent = priceText;
+            document.getElementById('gcashAmountRow').textContent     = priceText;
+            document.getElementById('gcashRef').textContent           = ref;
+            document.getElementById('gcashNumber').textContent        = number || '—';
+            document.getElementById('gcashName').textContent          = name;
+
+            const qrArea = document.getElementById('gcashQrDisplay');
+            if (qrImage) {
+                qrArea.innerHTML = '<img src="' + qrImage + '" alt="GCash QR" style="width:120px;height:120px;object-fit:contain;border-radius:10px;display:block;margin:0 auto 0.5rem;">';
+            } else {
+                qrArea.innerHTML = '<div class="gcash-qr-placeholder"><span>📲</span><span>QR Code</span></div>';
+            }
+
+            _gcashLaunchUrl = buildGcashUrl(number, priceNum, ref, paymentLink);
+
+            const redirectBox = document.getElementById('gcashRedirectBox');
+            if (_gcashLaunchUrl) {
+                redirectBox.style.display = 'block';
+                const btn = document.getElementById('gcashGoNowBtn');
+                if (btn) { btn.textContent = '📲 Open GCash Now'; btn.style.background = 'linear-gradient(135deg,#007bff,#0056d2)'; btn.disabled = false; }
+                startGcashCountdown();
+            } else {
+                redirectBox.style.display = 'none';
+            }
+
+            document.getElementById('gcashModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function buildGcashUrl(number, amount, ref, customLink) {
+            if (customLink && customLink.trim()) {
+                let url = customLink.trim();
+                try {
+                    const u = new URL(url.startsWith('http') ? url : 'https://' + url);
+                    if (amount > 0) u.searchParams.set('amount', amount);
+                    u.searchParams.set('remarks', ref);
+                    return u.toString();
+                } catch(e) { return url; }
+            }
+            if (number && number !== '—') {
+                const clean = number.replace(/[-\s]/g,'');
+                return 'https://app.gcash.com/payment?number=' + clean + '&amount=' + amount + '&remarks=' + encodeURIComponent(ref);
+            }
+            return 'https://app.gcash.com';
+        }
+
+        function startGcashCountdown() {
+            clearInterval(_gcashCountdownTimer);
+            let secs = 3;
+            const el = document.getElementById('gcashCountdown');
+            if (el) el.textContent = secs;
+            _gcashCountdownTimer = setInterval(function() {
+                secs--;
+                const el2 = document.getElementById('gcashCountdown');
+                if (el2) el2.textContent = secs;
+                if (secs <= 0) { clearInterval(_gcashCountdownTimer); launchGcash(); }
+            }, 1000);
+        }
+
+        function launchGcash() {
+            clearInterval(_gcashCountdownTimer);
+            if (!_gcashLaunchUrl) return;
+            const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+            const number = document.getElementById('gcashNumber').textContent.replace(/[-\s]/g,'');
+            const amount = document.getElementById('gcashAmountDisplay').textContent.replace(/[^\d]/g,'');
+            const ref    = document.getElementById('gcashRef').textContent;
+            if (isMobile && number && number !== '—') {
+                const deepLink = 'gcash://transfer?number=' + number + '&amount=' + amount + '&remarks=' + encodeURIComponent(ref);
+                window.location.href = deepLink;
+                setTimeout(function() { window.open(_gcashLaunchUrl, '_blank'); }, 1500);
+            } else {
+                window.open(_gcashLaunchUrl, '_blank');
+            }
+            const btn = document.getElementById('gcashGoNowBtn');
+            if (btn) { btn.textContent = '✓ GCash Opened!'; btn.style.background = 'linear-gradient(135deg,#00c73c,#00a832)'; btn.disabled = true; }
+        }
+
+        function closeGcashModal() {
+            clearInterval(_gcashCountdownTimer);
+            document.getElementById('gcashModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        function copyGcash(type) {
+            let text = '';
+            if (type === 'number') text = document.getElementById('gcashNumber').textContent;
+            if (type === 'ref')    text = document.getElementById('gcashRef').textContent;
+            if (!text || text === '—') return;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target;
+                const orig = btn.textContent;
+                btn.textContent = '✓ Copied!';
+                btn.style.background = 'rgba(0,199,60,0.4)';
+                setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 1500);
+            }).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = text; document.body.appendChild(ta);
+                ta.select(); document.execCommand('copy'); ta.remove();
+            });
+        }
+
+        document.getElementById('gcashModal').addEventListener('click', function(e) {
+            if (e.target === this) closeGcashModal();
+        });
+        // ============ END GCASH MODAL FUNCTIONS ============
+
+        // ============================================================
+        // ADMIN UPDATE WATCHER — real-time localStorage change detector
+        // ============================================================
+        const _watchKeys = {
+            kertHairstyles:  { icon: '💇', label: 'Hairstyles Updated',  msg: 'The admin has updated the hairstyle menu. The page will refresh with the latest styles and prices.' },
+            schedule:        { icon: '⏰', label: 'Schedule Changed',     msg: 'The shop schedule has been updated. New time slots are now available for booking.' },
+            vacationDates:   { icon: '🏖️', label: 'Vacation Dates Changed', msg: 'The admin has updated closed/vacation dates. Please check availability before booking.' },
+            bannedUsers:     { icon: '🚫', label: 'Account Status Changed', msg: 'Your account status may have changed. The page will reload to apply the latest permissions.' },
+        };
+
+        // Store current snapshots
+        const _watchSnapshots = {};
+        Object.keys(_watchKeys).forEach(k => {
+            _watchSnapshots[k] = localStorage.getItem(k);
+        });
+
+        function _applyAdminUpdate(key) {
+            // Re-load data
+            if (key === 'kertHairstyles') {
+                hairstylesData = loadHairstyles();
+                // Re-render hairstyles if on that tab
+                const hairstylesSection = document.getElementById('hairstyles');
+                if (hairstylesSection && hairstylesSection.classList.contains('active')) {
+                    renderHairstyles('all');
+                }
+            }
+            if (key === 'schedule') {
+                generateTimeSlots();
+            }
+            if (key === 'vacationDates') {
+                vacationDates = JSON.parse(localStorage.getItem('vacationDates')) || [];
+            }
+            if (key === 'bannedUsers') {
+                bannedUsers = JSON.parse(localStorage.getItem('bannedUsers')) || [];
+                // Check if current user got banned
+                if (currentUser && bannedUsers.some(b => b.email === currentUser.email)) {
+                    localStorage.removeItem('currentUser');
+                    showAdminUpdatePopup('🚫', 'Account Banned', 'Your account has been suspended by the admin. You will be logged out.', function() {
+                        location.href = 'index.html';
+                    });
+                    return;
+                }
+            }
+        }
+
+        // Poll localStorage every 2 seconds for changes from admin
+        setInterval(function() {
+            if (!currentUser) return; // only watch when logged in
+            Object.keys(_watchKeys).forEach(key => {
+                const current = localStorage.getItem(key);
+                if (current !== _watchSnapshots[key]) {
+                    _watchSnapshots[key] = current;
+                    const info = _watchKeys[key];
+                    _applyAdminUpdate(key);
+                    // Don't show popup for bannedUsers - handled inside _applyAdminUpdate
+                    if (key !== 'bannedUsers') {
+                        showAdminUpdatePopup(info.icon, info.label, info.msg, null);
+                    }
+                }
+            });
+        }, 2000);
+
+        function showAdminUpdatePopup(icon, title, message, onClose) {
+            // Only one popup at a time
+            if (document.getElementById('adminUpdatePopup')) return;
+
+            const popup = document.createElement('div');
+            popup.id = 'adminUpdatePopup';
+            popup.style.cssText = `
+                position:fixed;inset:0;background:rgba(0,0,0,0.82);
+                backdrop-filter:blur(12px);z-index:99999;
+                display:flex;justify-content:center;align-items:center;
+                padding:1.5rem;animation:fadeIn 0.3s ease-out;
+            `;
+            popup.innerHTML = `
+                <div style="
+                    background:linear-gradient(145deg,#2a2a2a,#1a1a1a);
+                    border:2px solid #FFD700;border-radius:28px;
+                    padding:2.8rem 2.5rem;max-width:460px;width:100%;
+                    text-align:center;position:relative;overflow:hidden;
+                    box-shadow:0 30px 80px rgba(255,215,0,0.2);
+                    animation:confirmedBounce 0.45s cubic-bezier(0.34,1.56,0.64,1);
+                ">
+                    <!-- shimmer bar -->
+                    <div style="position:absolute;top:0;left:0;right:0;height:5px;border-radius:28px 28px 0 0;
+                        background:linear-gradient(90deg,#FFD700,#FFA500,#FFD700);
+                        background-size:200%;animation:shimmer 2s linear infinite;"></div>
+
+                    <!-- icon ring -->
+                    <div style="
+                        width:85px;height:85px;border-radius:50%;margin:0.5rem auto 1.6rem;
+                        background:rgba(255,215,0,0.1);border:2.5px solid #FFD700;
+                        display:flex;align-items:center;justify-content:center;
+                        font-size:2.6rem;box-shadow:0 0 30px rgba(255,215,0,0.25);
+                        animation:bc-pop 0.4s 0.1s cubic-bezier(0.34,1.56,0.64,1) both;
+                    ">${icon}</div>
+
+                    <div style="
+                        font-family:'Playfair Display',serif;font-size:1.7rem;
+                        font-weight:800;color:#FFD700;margin-bottom:0.6rem;
+                        animation:fadeIn 0.4s 0.2s both;
+                    ">${title}</div>
+
+                    <div style="
+                        color:#b0b0b0;font-size:0.93rem;line-height:1.75;
+                        margin-bottom:2rem;animation:fadeIn 0.4s 0.3s both;
+                    ">${message}</div>
+
+                    <!-- badge -->
+                    <div style="
+                        display:inline-flex;align-items:center;gap:0.5rem;
+                        background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);
+                        border-radius:50px;padding:0.4rem 1rem;font-size:0.78rem;
+                        font-weight:700;color:#FFD700;margin-bottom:1.8rem;
+                        animation:fadeIn 0.4s 0.35s both;
+                    ">🔔 Live Update from Admin</div>
+
+                    <button onclick="closeAdminUpdatePopup()" style="
+                        width:100%;padding:1rem;
+                        background:linear-gradient(135deg,#FFD700,#FFA500);
+                        color:#000;border:none;border-radius:50px;
+                        font-family:'Poppins',sans-serif;font-weight:800;
+                        font-size:1rem;cursor:pointer;
+                        text-transform:uppercase;letter-spacing:1px;
+                        box-shadow:0 10px 30px rgba(255,215,0,0.3);
+                        animation:fadeIn 0.4s 0.4s both;
+                        transition:all 0.3s ease;
+                    " onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 18px 45px rgba(255,215,0,0.4)'"
+                       onmouseout="this.style.transform='';this.style.boxShadow='0 10px 30px rgba(255,215,0,0.3)'">
+                        ✓ Got It
+                    </button>
+                </div>
+            `;
+
+            // Store callback
+            popup._onClose = onClose;
+
+            // Close on backdrop click
+            popup.addEventListener('click', function(e) {
+                if (e.target === popup) closeAdminUpdatePopup();
+            });
+
+            document.body.appendChild(popup);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAdminUpdatePopup() {
+            const popup = document.getElementById('adminUpdatePopup');
+            if (!popup) return;
+            const cb = popup._onClose;
+            popup.remove();
+            document.body.style.overflow = 'auto';
+            if (typeof cb === 'function') cb();
+        }
+        // ============ END ADMIN UPDATE WATCHER ============
+    </script>
+</body>
+</html>

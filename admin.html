@@ -1,0 +1,1681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KERT Admin • Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #0f0f0f;
+            --secondary: #1a1a1a;
+            --tertiary: #2a2a2a;
+            --accent: #FFD700;
+            --accent-dark: #FFA500;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+            --border-color: #404040;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+            color: var(--text-primary);
+        }
+
+        .bg-animation {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(255,215,0,0.03) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(255,165,0,0.03) 0%, transparent 50%);
+            pointer-events: none; z-index: 0;
+            animation: bgFloat 15s ease-in-out infinite;
+        }
+        @keyframes bgFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(20px)} }
+
+        .login-container {
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; padding: 2rem; position: relative; z-index: 1;
+        }
+        .login-box {
+            background: var(--secondary); border: 1px solid var(--border-color);
+            padding: 3rem; border-radius: 20px; max-width: 450px; width: 100%;
+            animation: slideUp 0.6s ease-out;
+        }
+        @keyframes slideUp {
+            from { opacity:0; transform:translateY(30px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+        .login-header { text-align: center; margin-bottom: 2.5rem; }
+        .login-header h1 {
+            font-family: 'Playfair Display', serif; font-size: 2.5rem;
+            background: linear-gradient(135deg,#FFD700,#FFA500);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; margin-bottom: 0.5rem;
+        }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.7rem; font-weight: 600; color: var(--text-primary); }
+        .form-group input, .form-group select {
+            width: 100%; padding: 0.9rem 1rem;
+            background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.12);
+            border-radius: 12px; color: var(--text-primary);
+            font-family: 'Poppins', sans-serif; transition: all 0.3s ease;
+        }
+        .form-group input::placeholder { color: rgba(176,176,176,0.5); }
+        .form-group input:focus, .form-group select:focus {
+            outline: none; border-color: rgba(255,215,0,0.3);
+            background: rgba(255,215,0,0.03); box-shadow: 0 0 12px rgba(255,215,0,0.05);
+        }
+        .btn {
+            width: 100%; padding: 1rem; border: none; border-radius: 10px;
+            font-family: 'Poppins', sans-serif; font-weight: 600;
+            cursor: pointer; transition: all 0.3s ease;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg,#FFD700,#FFA500); color: #000;
+            box-shadow: 0 10px 30px rgba(255,215,0,0.2);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 15px 40px rgba(255,215,0,0.3); }
+        .error-message {
+            color: var(--danger); background: rgba(244,67,54,0.1);
+            padding: 1rem; border-radius: 10px; margin-bottom: 1rem;
+            display: none; border: 1px solid rgba(244,67,54,0.3);
+        }
+        .error-message.active { display: block; }
+        .demo-info {
+            text-align: center; margin-top: 2rem; padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary); font-size: 0.9rem;
+        }
+        .hidden { display: none !important; }
+
+        /* Dashboard layout */
+        .dashboard {
+            display: grid; grid-template-columns: 250px 1fr;
+            gap: 2rem; padding: 2rem; min-height: 100vh;
+            position: relative; z-index: 1;
+        }
+        .sidebar {
+            background: var(--secondary); border: 1px solid var(--border-color);
+            border-radius: 20px; padding: 2rem 1rem;
+            height: fit-content; position: sticky; top: 2rem;
+        }
+        .sidebar-logo {
+            font-family: 'Playfair Display', serif; font-size: 1.5rem;
+            background: linear-gradient(135deg,#FFD700,#FFA500);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; margin-bottom: 2rem;
+            text-align: center; font-weight: 800;
+        }
+        .menu-btn {
+            width: 100%; padding: 1rem; background: rgba(255,255,255,0.05);
+            border: none; border-radius: 10px; color: var(--text-primary);
+            cursor: pointer; font-family: 'Poppins', sans-serif;
+            font-weight: 600; margin-bottom: 0.8rem;
+            transition: all 0.3s ease; text-align: left;
+        }
+        .menu-btn:hover, .menu-btn.active {
+            background: linear-gradient(135deg,rgba(255,215,0,0.2),rgba(255,165,0,0.2));
+            border: 1px solid var(--accent); color: var(--accent);
+        }
+        .main-content { flex: 1; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; }
+        .header h1 { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--accent); }
+        .logout-btn {
+            background: rgba(244,67,54,0.2); color: var(--danger);
+            border: 1px solid rgba(244,67,54,0.3);
+            padding: 0.8rem 1.5rem; border-radius: 50px;
+            cursor: pointer; font-weight: 600; transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+        .logout-btn:hover { background: rgba(244,67,54,0.3); transform: translateY(-2px); }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.5rem; margin-bottom: 3rem; }
+        .stat-card {
+            background: var(--secondary); border: 1px solid var(--border-color);
+            padding: 2rem; border-radius: 20px; transition: all 0.3s ease;
+        }
+        .stat-card:hover { border-color: var(--accent); box-shadow: 0 10px 40px rgba(255,215,0,0.1); transform: translateY(-5px); }
+        .stat-label { color: var(--text-secondary); font-size: 0.9rem; text-transform: uppercase; margin-bottom: 0.8rem; }
+        .stat-value { font-size: 2.5rem; font-weight: 800; color: var(--accent); }
+
+        .content-section {
+            background: var(--secondary); border: 1px solid var(--border-color);
+            border-radius: 20px; padding: 2.5rem; margin-bottom: 2rem;
+        }
+        .content-section h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 2rem; color: var(--accent); }
+
+        table { width: 100%; border-collapse: collapse; }
+        table thead { background: rgba(255,215,0,0.05); }
+        table th { padding: 1.2rem; text-align: left; font-weight: 600; border-bottom: 2px solid var(--border-color); color: var(--accent); }
+        table td { padding: 1.2rem; border-bottom: 1px solid var(--border-color); }
+        table tbody tr:hover { background: rgba(255,215,0,0.05); }
+
+        .badge { display: inline-block; padding: 0.5rem 1rem; border-radius: 50px; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; }
+        .badge-pending  { background: rgba(255,152,0,0.2); color: #ff9800; }
+        .badge-confirmed{ background: rgba(76,175,80,0.2);  color: #4caf50; }
+        .badge-completed{ background: rgba(33,150,243,0.2); color: #2196f3; }
+
+        .btn-small { padding: 0.5rem 1rem; border: none; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; text-transform: uppercase; transition: all 0.3s ease; font-family: 'Poppins', sans-serif; }
+        .btn-approve { background: rgba(76,175,80,0.2);  color: #4caf50; border: 1px solid rgba(76,175,80,0.3); }
+        .btn-approve:hover { background: rgba(76,175,80,0.3); }
+        .btn-ban     { background: rgba(244,67,54,0.2);  color: #f44336; border: 1px solid rgba(244,67,54,0.3); }
+        .btn-ban:hover { background: rgba(244,67,54,0.3); }
+        .btn-unban   { background: rgba(76,175,80,0.2);  color: #4caf50; border: 1px solid rgba(76,175,80,0.3); }
+        .btn-unban:hover { background: rgba(76,175,80,0.3); }
+
+        .status-badge { padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-block; }
+        .status-active   { background: rgba(76,175,80,0.2);  color: #4caf50; border: 1px solid rgba(76,175,80,0.4); }
+        .status-inactive { background: rgba(200,200,200,0.2); color: rgba(200,200,200,0.8); border: 1px solid rgba(200,200,200,0.3); }
+
+        select {
+            width: 100% !important; padding: 0.8rem !important;
+            background: rgba(255,255,255,0.05) !important;
+            border: 1.5px solid rgba(255,255,255,0.12) !important;
+            border-radius: 10px !important; color: var(--text-primary) !important;
+            font-family: 'Poppins', sans-serif !important;
+            font-size: 0.95rem !important; cursor: pointer !important;
+            transition: all 0.3s ease !important;
+        }
+        select:hover  { background-color: rgba(255,215,0,0.08) !important; border-color: rgba(255,215,0,0.3) !important; }
+        select:focus  { outline: none !important; border-color: var(--accent) !important; background-color: rgba(255,215,0,0.1) !important; box-shadow: 0 0 20px rgba(255,215,0,0.15) !important; }
+        select option { background: #2d2d2d !important; color: var(--text-primary) !important; }
+        select option:checked { background-color: var(--accent) !important; color: #000 !important; font-weight: 600 !important; }
+        select option:disabled { color: rgba(255,255,255,0.5) !important; background: rgba(0,0,0,0.2) !important; }
+
+        @media (max-width: 1024px) {
+            .stats-grid { grid-template-columns: repeat(2,1fr); }
+            .dashboard  { grid-template-columns: 1fr; }
+            .sidebar    { position: relative; top: 0; }
+        }
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .header { flex-direction: column; text-align: center; gap: 1rem; }
+        }
+
+        /* ═══════════════════════════════════════════
+           SHARED MODAL BASE
+        ═══════════════════════════════════════════ */
+        .adm-modal-backdrop {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(12px);
+            z-index: 8000; justify-content: center; align-items: center; padding: 1.5rem;
+        }
+        .adm-modal-backdrop.active { display: flex !important; animation: fadeIn 0.25s ease-out; }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        @keyframes popIn  { from{transform:scale(0.7) translateY(30px);opacity:0} to{transform:scale(1) translateY(0);opacity:1} }
+
+        /* ═══════════════════════════════════════════
+           TOAST / SUCCESS ALERT MODAL
+        ═══════════════════════════════════════════ */
+        .adm-alert-box {
+            background: linear-gradient(145deg,#2a2a2a,#1a1a1a);
+            border-radius: 24px; padding: 2.5rem 2rem;
+            max-width: 420px; width: 100%; text-align: center;
+            animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+            position: relative; overflow: hidden;
+        }
+        .adm-alert-box .top-bar {
+            position: absolute; top: 0; left: 0; right: 0; height: 5px;
+            border-radius: 24px 24px 0 0;
+        }
+        .adm-alert-box.type-success { border: 2px solid #4caf50; }
+        .adm-alert-box.type-success .top-bar { background: linear-gradient(90deg,#4caf50,#81c784,#4caf50); background-size:200%;animation:shimmerBar 2s linear infinite; }
+        .adm-alert-box.type-error   { border: 2px solid #f44336; }
+        .adm-alert-box.type-error   .top-bar { background: linear-gradient(90deg,#f44336,#ef9a9a,#f44336); background-size:200%;animation:shimmerBar 2s linear infinite; }
+        .adm-alert-box.type-warning { border: 2px solid #ff9800; }
+        .adm-alert-box.type-warning .top-bar { background: linear-gradient(90deg,#ff9800,#ffcc80,#ff9800); background-size:200%;animation:shimmerBar 2s linear infinite; }
+        .adm-alert-box.type-info    { border: 2px solid #2196f3; }
+        .adm-alert-box.type-info    .top-bar { background: linear-gradient(90deg,#2196f3,#90caf9,#2196f3); background-size:200%;animation:shimmerBar 2s linear infinite; }
+        @keyframes shimmerBar { 0%{background-position:0%} 100%{background-position:200%} }
+
+        .adm-alert-icon {
+            width: 70px; height: 70px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; margin: 0 auto 1.2rem;
+            animation: popIn 0.4s 0.1s cubic-bezier(0.34,1.56,0.64,1) both;
+        }
+        .type-success .adm-alert-icon { background: rgba(76,175,80,0.15);  border: 2px solid #4caf50; box-shadow:0 0 25px rgba(76,175,80,0.25); }
+        .type-error   .adm-alert-icon { background: rgba(244,67,54,0.15);  border: 2px solid #f44336; box-shadow:0 0 25px rgba(244,67,54,0.25); }
+        .type-warning .adm-alert-icon { background: rgba(255,152,0,0.15);  border: 2px solid #ff9800; box-shadow:0 0 25px rgba(255,152,0,0.25); }
+        .type-info    .adm-alert-icon { background: rgba(33,150,243,0.15); border: 2px solid #2196f3; box-shadow:0 0 25px rgba(33,150,243,0.25); }
+
+        .adm-alert-title {
+            font-family: 'Playfair Display', serif; font-size: 1.6rem;
+            font-weight: 800; margin-bottom: 0.5rem;
+            animation: fadeIn 0.3s 0.2s both;
+        }
+        .type-success .adm-alert-title { color: #4caf50; }
+        .type-error   .adm-alert-title { color: #f44336; }
+        .type-warning .adm-alert-title { color: #ff9800; }
+        .type-info    .adm-alert-title { color: #2196f3; }
+
+        .adm-alert-msg {
+            color: var(--text-secondary); font-size: 0.93rem;
+            line-height: 1.7; margin-bottom: 1.8rem;
+            animation: fadeIn 0.3s 0.3s both;
+        }
+        .adm-alert-ok {
+            padding: 0.9rem 2.5rem; border: none; border-radius: 50px;
+            font-family: 'Poppins', sans-serif; font-weight: 700;
+            font-size: 0.95rem; cursor: pointer; transition: all 0.3s ease;
+            text-transform: uppercase; letter-spacing: 1px;
+            animation: fadeIn 0.3s 0.35s both;
+        }
+        .type-success .adm-alert-ok { background: linear-gradient(135deg,#4caf50,#2e7d32); color:#fff; box-shadow:0 10px 25px rgba(76,175,80,0.3); }
+        .type-error   .adm-alert-ok { background: linear-gradient(135deg,#f44336,#b71c1c); color:#fff; box-shadow:0 10px 25px rgba(244,67,54,0.3); }
+        .type-warning .adm-alert-ok { background: linear-gradient(135deg,#ff9800,#e65100); color:#fff; box-shadow:0 10px 25px rgba(255,152,0,0.3); }
+        .type-info    .adm-alert-ok { background: linear-gradient(135deg,#2196f3,#0d47a1); color:#fff; box-shadow:0 10px 25px rgba(33,150,243,0.3); }
+        .adm-alert-ok:hover { transform: translateY(-3px); filter: brightness(1.1); }
+
+        /* ═══════════════════════════════════════════
+           CONFIRM MODAL
+        ═══════════════════════════════════════════ */
+        .adm-confirm-box {
+            background: linear-gradient(145deg,#2a2a2a,#1a1a1a);
+            border: 2px solid #FF6B6B; border-radius: 24px;
+            padding: 2.5rem 2rem; max-width: 440px; width: 100%; text-align: center;
+            box-shadow: 0 25px 70px rgba(255,107,107,0.25);
+            animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+            position: relative; overflow: hidden;
+        }
+        .adm-confirm-box .top-bar {
+            position: absolute; top: 0; left: 0; right: 0; height: 5px;
+            border-radius: 24px 24px 0 0;
+            background: linear-gradient(90deg,#FF6B6B,#ffb3b3,#FF6B6B);
+            background-size: 200%; animation: shimmerBar 2s linear infinite;
+        }
+        .adm-confirm-icon {
+            width: 70px; height: 70px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; margin: 0.5rem auto 1.2rem;
+            background: rgba(255,107,107,0.15); border: 2px solid #FF6B6B;
+            box-shadow: 0 0 25px rgba(255,107,107,0.25);
+            animation: popIn 0.4s 0.1s cubic-bezier(0.34,1.56,0.64,1) both;
+        }
+        .adm-confirm-title {
+            font-family: 'Playfair Display', serif; font-size: 1.6rem;
+            font-weight: 800; color: #FF6B6B; margin-bottom: 0.5rem;
+        }
+        .adm-confirm-msg {
+            color: var(--text-secondary); font-size: 0.93rem;
+            line-height: 1.7; margin-bottom: 0.8rem;
+        }
+        .adm-confirm-detail {
+            background: rgba(255,107,107,0.08); border: 1px solid rgba(255,107,107,0.2);
+            border-radius: 14px; padding: 1rem 1.2rem; margin-bottom: 1.5rem;
+            text-align: left;
+        }
+        .adm-confirm-detail p {
+            display: flex; justify-content: space-between;
+            font-size: 0.87rem; padding: 0.4rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.06); color: var(--text-secondary);
+        }
+        .adm-confirm-detail p:last-child { border-bottom: none; }
+        .adm-confirm-detail strong { color: var(--accent); }
+        .adm-confirm-warn {
+            color: #FF6B6B; font-size: 0.83rem; font-weight: 600; margin-bottom: 1.5rem;
+        }
+        .adm-confirm-btns { display: flex; gap: 0.8rem; }
+        .adm-confirm-btns button {
+            flex: 1; padding: 0.9rem; border: none; border-radius: 14px;
+            font-family: 'Poppins', sans-serif; font-weight: 700;
+            font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .adm-btn-keep {
+            background: rgba(255,255,255,0.08);
+            border: 2px solid var(--border-color) !important; color: var(--text-primary);
+        }
+        .adm-btn-keep:hover { background: rgba(255,255,255,0.14); border-color: var(--accent) !important; transform: translateY(-2px); }
+        .adm-btn-proceed {
+            background: linear-gradient(135deg,#FF6B6B,#FF4757); color: #fff;
+            box-shadow: 0 10px 25px rgba(255,107,107,0.3);
+        }
+        .adm-btn-proceed:hover { transform: translateY(-3px); box-shadow: 0 18px 40px rgba(255,107,107,0.4); }
+
+        /* ═══════════════════════════════════════════
+           CANCEL BOOKING MODAL (same as original)
+        ═══════════════════════════════════════════ */
+        .cancel-booking-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 7000; justify-content: center; align-items: center; padding: 2rem; }
+        .cancel-booking-modal.active { display: flex !important; animation: fadeIn 0.3s ease-out; }
+        .cancel-booking-content { background: linear-gradient(135deg,#2d2d2d 0%,#1a1a1a 100%); border: 3px solid #FF6B6B; border-radius: 25px; padding: 2rem; max-width: 420px; width: 90%; text-align: center; box-shadow: 0 20px 60px rgba(255,107,107,0.3); animation: slideUp 0.4s ease-out; }
+        .cancel-booking-icon { font-size: 3.5rem; margin-bottom: 1rem; display: block; animation: bgFloat 2s ease-in-out infinite; }
+        .cancel-booking-content h2 { font-family:'Playfair Display',serif; font-size:2rem; color:#FF6B6B; margin-bottom:0.8rem; }
+        .cancel-booking-content p { color:var(--text-secondary); font-size:0.95rem; line-height:1.6; margin-bottom:1.5rem; }
+        .cancel-booking-details { background:rgba(255,107,107,0.1); border:1px solid rgba(255,107,107,0.3); border-radius:15px; padding:1.2rem; margin-bottom:1.5rem; text-align:left; }
+        .cancel-booking-details p { margin:0.6rem 0; font-size:0.9rem; display:flex; justify-content:space-between; align-items:center; }
+        .cancel-booking-details strong { color:var(--accent); }
+        .cancel-booking-buttons { display:flex; gap:1rem; }
+        .cancel-booking-btn { flex:1; padding:1rem 1.5rem; border-radius:15px; font-size:0.9rem; font-weight:700; cursor:pointer; transition:all 0.3s ease; text-transform:uppercase; letter-spacing:1px; border:none; font-family:'Poppins',sans-serif; }
+        .cancel-confirm-btn { background:linear-gradient(135deg,#FF6B6B,#FF4757); color:#fff; box-shadow:0 10px 30px rgba(255,107,107,0.3); }
+        .cancel-confirm-btn:hover { transform:translateY(-4px); box-shadow:0 20px 45px rgba(255,107,107,0.4); }
+        .cancel-cancel-btn { background:rgba(255,255,255,0.1); color:var(--text-primary); border:2px solid var(--border-color) !important; }
+        .cancel-cancel-btn:hover { background:rgba(255,255,255,0.15); border-color:var(--accent) !important; transform:translateY(-4px); }
+
+        /* ═══════════════════════════════════════════
+           ADMIN DATE PICKER
+        ═══════════════════════════════════════════ */
+        .admin-date-picker-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); z-index:6000; justify-content:center; align-items:center; padding:2rem; }
+        .admin-date-picker-modal.active { display:flex !important; animation:fadeIn 0.3s ease-out; }
+        .admin-date-picker-content { background:linear-gradient(135deg,#2d2d2d 0%,#1a1a1a 100%); border:2px solid var(--accent); border-radius:25px; padding:2.5rem; max-width:900px; width:100%; box-shadow:0 20px 60px rgba(255,215,0,0.2); animation:slideUp 0.4s ease-out; }
+        .admin-date-picker-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; border-bottom:2px solid var(--accent); padding-bottom:1rem; }
+        .admin-date-picker-header h3 { font-family:'Playfair Display',serif; font-size:1.8rem; color:var(--accent); margin:0; }
+        .admin-date-picker-close { background:none; border:none; color:var(--accent); font-size:2.5rem; cursor:pointer; transition:all 0.3s ease; width:40px; height:40px; display:flex; align-items:center; justify-content:center; }
+        .admin-date-picker-close:hover { color:#FFA500; transform:rotate(90deg); }
+        .admin-date-picker-body { display:grid; grid-template-columns:1fr 1fr; gap:3rem; margin-top:2rem; }
+        .admin-calendar-section { background:rgba(255,215,0,0.05); border:1px solid rgba(255,215,0,0.2); border-radius:15px; padding:2rem; }
+        .admin-calendar-nav { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
+        .admin-calendar-nav h4 { font-size:1.3rem; color:var(--accent); margin:0; font-weight:600; }
+        .admin-calendar-btn { background:rgba(255,215,0,0.2); border:1px solid rgba(255,215,0,0.3); color:var(--accent); width:35px; height:35px; border-radius:8px; cursor:pointer; font-size:1.3rem; transition:all 0.3s ease; display:flex; align-items:center; justify-content:center; }
+        .admin-calendar-btn:hover { background:rgba(255,215,0,0.4); transform:scale(1.1); }
+        .admin-calendar-grid-header { display:grid; grid-template-columns:repeat(7,1fr); gap:0.5rem; margin-bottom:1rem; text-align:center; }
+        .admin-calendar-grid-header div { color:var(--accent); font-weight:700; font-size:0.85rem; padding:0.5rem 0; }
+        .admin-calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:0.5rem; margin-bottom:1.5rem; }
+        .admin-calendar-day { aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:10px; cursor:pointer; font-weight:500; transition:all 0.3s ease; border:1px solid transparent; background:rgba(255,255,255,0.05); color:var(--text-primary); font-size:0.9rem; }
+        .admin-calendar-day:hover { background:rgba(255,215,0,0.15); border-color:rgba(255,215,0,0.3); transform:scale(1.05); }
+        .admin-calendar-day.other-month { opacity:0.3; cursor:not-allowed; }
+        .admin-calendar-day.other-month:hover { background:rgba(255,255,255,0.05); transform:none; }
+        .admin-calendar-day.selected { background:linear-gradient(135deg,#FFD700,#FFA500); color:#000; font-weight:700; border-color:var(--accent); box-shadow:0 0 15px rgba(255,215,0,0.3); }
+        .admin-calendar-day.today { border:2px solid var(--accent); background:rgba(255,215,0,0.1); }
+        .admin-calendar-actions { display:flex; gap:1rem; }
+        .admin-btn-today, .admin-btn-clear { flex:1; padding:0.8rem; border:1px solid var(--accent); background:rgba(255,215,0,0.1); color:var(--accent); border-radius:10px; cursor:pointer; font-weight:600; transition:all 0.3s ease; font-size:0.9rem; font-family:'Poppins',sans-serif; }
+        .admin-btn-today:hover, .admin-btn-clear:hover { background:rgba(255,215,0,0.2); transform:translateY(-2px); }
+        .admin-selected-date-display { background:rgba(255,215,0,0.05); border:1px solid rgba(255,215,0,0.2); border-radius:15px; padding:2rem; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; }
+        .admin-selected-label { color:var(--text-secondary); font-size:0.9rem; font-weight:600; margin-bottom:1rem; text-transform:uppercase; letter-spacing:1px; }
+        .admin-selected-date-value { font-family:'Playfair Display',serif; font-size:2.5rem; color:var(--accent); margin-bottom:2rem; font-weight:700; }
+        .admin-btn-confirm { width:100%; padding:1rem; background:linear-gradient(135deg,#FFD700,#FFA500); color:#000; border:none; border-radius:12px; font-size:1rem; font-weight:700; cursor:pointer; transition:all 0.3s ease; box-shadow:0 10px 30px rgba(255,215,0,0.2); font-family:'Poppins',sans-serif; }
+        .admin-btn-confirm:hover { transform:translateY(-3px); box-shadow:0 15px 40px rgba(255,215,0,0.3); }
+
+        @media (max-width:768px) {
+            .admin-date-picker-body { grid-template-columns:1fr; gap:2rem; }
+            .admin-selected-date-value { font-size:1.8rem; }
+            .cancel-booking-buttons { flex-direction:column; }
+            .adm-confirm-btns { flex-direction:column; }
+        }
+    </style>
+</head>
+<body>
+<div class="bg-animation"></div>
+
+<!-- ════════════ LOGIN ════════════ -->
+<div id="loginPage" class="login-container">
+    <div class="login-box">
+        <div class="login-header">
+            <h1>✂️ KERT</h1>
+            <p>Admin Dashboard</p>
+        </div>
+        <div class="error-message" id="errorMsg"></div>
+        <form onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="username" placeholder="admin" required autofocus>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Sign In</button>
+        </form>
+        <div class="demo-info">
+            <strong>Demo Credentials:</strong><br>
+            Username: <strong>admin</strong> &nbsp;|&nbsp; Password: <strong>1234</strong>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════ DASHBOARD ════════════ -->
+<div id="dashboardPage" class="hidden">
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div style="text-align:center;margin-bottom:1.5rem;">
+                <svg viewBox="0 0 200 200" width="60" height="60" style="filter:drop-shadow(0 5px 15px rgba(255,215,0,0.2));">
+                    <ellipse cx="100" cy="130" rx="45" ry="35" fill="none" stroke="#FFD700" stroke-width="3"/>
+                    <line x1="60" y1="60" x2="70" y2="100" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
+                    <line x1="70" y1="40" x2="75" y2="110" stroke="#FFD700" stroke-width="3"/>
+                    <line x1="80" y1="35" x2="85" y2="115" stroke="#FFD700" stroke-width="3"/>
+                    <line x1="90" y1="33" x2="95" y2="120" stroke="#FFD700" stroke-width="3"/>
+                    <line x1="100" y1="32" x2="105" y2="120" stroke="#FFD700" stroke-width="3"/>
+                    <rect x="65" y="110" width="45" height="8" rx="4" fill="none" stroke="#FFD700" stroke-width="2.5"/>
+                    <circle cx="140" cy="55" r="12" fill="none" stroke="#FFD700" stroke-width="2.5"/>
+                    <line x1="140" y1="68" x2="160" y2="95" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
+                    <circle cx="155" cy="75" r="12" fill="none" stroke="#FFD700" stroke-width="2.5"/>
+                    <line x1="155" y1="88" x2="168" y2="110" stroke="#FFD700" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="sidebar-logo">KERT</div>
+            <button class="menu-btn active" onclick="switchSection('dashboard', this)">📊 Dashboard</button>
+            <button class="menu-btn" onclick="switchSection('bookings', this)">📅 Bookings</button>
+            <button class="menu-btn" onclick="switchSection('users', this)">👥 Users</button>
+            <button class="menu-btn" onclick="switchSection('bannedUsers', this)">🚫 Banned</button>
+            <button class="menu-btn" onclick="switchSection('schedule', this)">⏰ Schedule</button>
+            <button class="menu-btn" onclick="switchSection('vacation', this)">🏖️ Vacation</button>
+            <button class="menu-btn" onclick="switchSection('staff', this)">👤 Staff</button>
+            <button class="menu-btn" onclick="switchSection('hairstyles', this)">💇 Hairstyles</button>
+            <button class="menu-btn" onclick="switchSection('gcash', this)">📱 GCash</button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h1 id="pageTitle">Dashboard</h1>
+                <button class="logout-btn" onclick="confirmLogout()">Logout</button>
+            </div>
+
+            <!-- Dashboard -->
+            <div id="dashboardSection">
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-value" id="totalUsers">0</div></div>
+                    <div class="stat-card"><div class="stat-label">Total Bookings</div><div class="stat-value" id="totalBookings">0</div></div>
+                    <div class="stat-card"><div class="stat-label">Pending Bookings</div><div class="stat-value" id="pendingBookings">0</div></div>
+                    <div class="stat-card"><div class="stat-label">Banned Users</div><div class="stat-value" id="bannedCount">0</div></div>
+                </div>
+            </div>
+
+            <!-- Bookings -->
+            <div id="bookingsSection" class="hidden">
+                <div class="content-section">
+                    <h2>Manage Bookings</h2>
+                    <table>
+                        <thead><tr><th>Customer</th><th>Email</th><th>Date & Time</th><th>Service</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody id="bookingsTable"><tr><td colspan="6" style="text-align:center;">No bookings</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Users -->
+            <div id="usersSection" class="hidden">
+                <div class="content-section">
+                    <h2>Registered Users</h2>
+                    <table>
+                        <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+                        <tbody id="usersTable"><tr><td colspan="6" style="text-align:center;">No users</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Banned -->
+            <div id="bannedUsersSection" class="hidden">
+                <div class="content-section">
+                    <h2>🚫 Banned Users</h2>
+                    <table>
+                        <thead><tr><th>Name</th><th>Email</th><th>Banned Date</th><th>Actions</th></tr></thead>
+                        <tbody id="bannedUsersTable"><tr><td colspan="4" style="text-align:center;">No banned users</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Schedule -->
+            <div id="scheduleSection" class="hidden">
+                <div class="content-section">
+                    <h2>⏰ Schedule Management</h2>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:3rem;">
+                        <div style="background:rgba(255,215,0,0.1);border:1px solid var(--accent);border-radius:15px;padding:2rem;">
+                            <h3 style="color:var(--accent);margin-bottom:1.5rem;">📍 Current Schedule</h3>
+                            <div style="margin-bottom:1.5rem;"><p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:0.5rem;">Opening Time</p><p style="font-size:1.5rem;color:var(--accent);font-weight:700;" id="displayOpening">8:00 AM</p></div>
+                            <div style="margin-bottom:1.5rem;"><p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:0.5rem;">Closing Time</p><p style="font-size:1.5rem;color:var(--accent);font-weight:700;" id="displayClosing">6:00 PM</p></div>
+                            <div><p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:0.5rem;">Slot Duration</p><p style="font-size:1.5rem;color:var(--accent);font-weight:700;" id="displayDuration">30 minutes</p></div>
+                        </div>
+                        <form onsubmit="saveSchedule(event)">
+                            <div class="form-group"><label>Opening Time *</label><input type="time" id="scheduleOpening" required></div>
+                            <div class="form-group"><label>Closing Time *</label><input type="time" id="scheduleClosing" required></div>
+                            <div class="form-group">
+                                <label>Slot Duration (minutes) *</label>
+                                <select id="scheduleDuration" required>
+                                    <option value="" disabled selected>Select duration...</option>
+                                    <option value="15">15 minutes</option>
+                                    <option value="20">20 minutes</option>
+                                    <option value="30">30 minutes</option>
+                                    <option value="45">45 minutes</option>
+                                    <option value="60">60 minutes (1 hour)</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width:100%;">💾 Save Schedule</button>
+                        </form>
+                    </div>
+                    <div style="background:rgba(33,150,243,0.1);border:1px solid #2196f3;border-radius:15px;padding:2rem;">
+                        <h3 style="color:#2196f3;margin-bottom:1rem;">ℹ️ Schedule Information</h3>
+                        <p style="color:var(--text-secondary);margin-bottom:1rem;">⏱️ <strong>Opening Time:</strong> When the shop starts accepting bookings</p>
+                        <p style="color:var(--text-secondary);margin-bottom:1rem;">🔔 <strong>Closing Time:</strong> When the shop stops accepting bookings</p>
+                        <p style="color:var(--text-secondary);">⚙️ <strong>Slot Duration:</strong> Each appointment slot length (e.g. 30 min = 8:00, 8:30, 9:00…)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vacation -->
+            <div id="vacationSection" class="hidden">
+                <div class="content-section">
+                    <h2>🏖️ Vacation Management</h2>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:3rem;">
+                        <div style="background:rgba(76,175,80,0.1);border:1px solid #4caf50;border-radius:15px;padding:2rem;">
+                            <h3 style="color:#4caf50;margin-bottom:1.5rem;">➕ Add Vacation Date</h3>
+                            <form onsubmit="addVacation(event)">
+                                <div class="form-group"><label>Vacation Date *</label><input type="date" id="vacationDate" required></div>
+                                <div class="form-group">
+                                    <label>Reason (Optional)</label>
+                                    <input type="text" id="vacationReason" placeholder="e.g., Training, Personal, Holiday" style="width:100%;padding:0.8rem;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.12);border-radius:10px;color:var(--text-primary);font-family:'Poppins',sans-serif;">
+                                </div>
+                                <button type="submit" class="btn btn-primary" style="width:100%;">➕ Add Vacation</button>
+                            </form>
+                        </div>
+                        <div style="background:rgba(255,165,0,0.1);border:1px solid var(--accent);border-radius:15px;padding:2rem;">
+                            <h3 style="color:var(--accent);margin-bottom:1.5rem;">ℹ️ Vacation Info</h3>
+                            <p style="color:var(--text-secondary);margin-bottom:1rem;">📅 <strong>Vacation Dates:</strong> Dates when the shop is closed</p>
+                            <p style="color:var(--text-secondary);margin-bottom:1rem;">🚫 <strong>Booking Blocked:</strong> Users cannot book on these dates</p>
+                            <p style="color:var(--text-secondary);">✂️ <strong>Services Unavailable:</strong> All services unavailable on vacation dates</p>
+                        </div>
+                    </div>
+                    <div style="background:rgba(33,150,243,0.1);border:1px solid #2196f3;border-radius:15px;padding:2rem;">
+                        <h3 style="color:#2196f3;margin-bottom:1.5rem;">📆 Vacation Schedule</h3>
+                        <div id="vacationList" style="display:grid;gap:1rem;">
+                            <div style="color:var(--text-secondary);text-align:center;padding:2rem;">No vacation dates set</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GCash Settings -->
+            <div id="gcashSection" class="hidden">
+                <div class="content-section">
+                    <h2>📱 GCash Settings</h2>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:2rem;">
+
+                        <!-- Form -->
+                        <div style="background:rgba(0,199,60,0.08);border:1px solid rgba(0,199,60,0.3);border-radius:15px;padding:2rem;">
+                            <h3 style="color:#00c73c;margin-bottom:1.5rem;">⚙️ Payment Details</h3>
+                            <div class="form-group">
+                                <label>GCash Number *</label>
+                                <input type="text" id="gcashNumberInput" placeholder="e.g. 09123456789" maxlength="13">
+                            </div>
+                            <div class="form-group">
+                                <label>Account Name *</label>
+                                <input type="text" id="gcashNameInput" placeholder="e.g. KERT Barber Shop">
+                            </div>
+                            <div class="form-group">
+                                <label>GCash Payment Link <span style="color:#b0b0b0;font-size:0.78rem;">(optional — users get redirected here)</span></label>
+                                <input type="text" id="gcashPaymentLinkInput" placeholder="e.g. https://link.gcash.com/xxxxx or gcash.me/yourname">
+                            </div>
+                            <div class="form-group">
+                                <label>QR Code Image (optional)</label>
+                                <div id="gcashQrPreview" onclick="document.getElementById('gcashQrInput').click()" style="width:100%;height:160px;border:2px dashed rgba(0,199,60,0.3);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:rgba(0,199,60,0.04);overflow:hidden;transition:all 0.3s;" onmouseover="this.style.borderColor='#00c73c'" onmouseout="this.style.borderColor='rgba(0,199,60,0.3)'">
+                                    <span id="gcashQrPlaceholder" style="font-size:2rem;margin-bottom:0.5rem;">📲</span>
+                                    <span id="gcashQrHint" style="color:#b0b0b0;font-size:0.82rem;">Click to upload QR image</span>
+                                    <img id="gcashQrImg" src="" alt="" style="display:none;width:100%;height:100%;object-fit:contain;">
+                                </div>
+                                <input type="file" id="gcashQrInput" accept="image/*" style="display:none;" onchange="handleGcashQr(event)">
+                                <button onclick="removeGcashQr()" style="margin-top:0.5rem;background:rgba(244,67,54,0.15);color:#f44336;border:1px solid rgba(244,67,54,0.3);padding:0.4rem 0.8rem;border-radius:8px;cursor:pointer;font-size:0.8rem;font-family:'Poppins',sans-serif;font-weight:600;">🗑️ Remove QR</button>
+                            </div>
+                            <button onclick="saveGcashSettings()" class="btn btn-primary" style="width:100%;">💾 Save GCash Settings</button>
+                        </div>
+
+                        <!-- Live Preview -->
+                        <div style="background:rgba(0,199,60,0.05);border:1px solid rgba(0,199,60,0.2);border-radius:15px;padding:2rem;">
+                            <h3 style="color:#00c73c;margin-bottom:1.5rem;">👁️ Live Preview</h3>
+                            <div style="background:linear-gradient(135deg,#007bff,#003d99);border-radius:12px;padding:1rem 1.2rem;display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">
+                                <div style="width:40px;height:40px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">📱</div>
+                                <div>
+                                    <div style="color:#fff;font-weight:700;font-size:0.95rem;">GCash Payment</div>
+                                    <div style="color:rgba(255,255,255,0.7);font-size:0.75rem;">Send to complete booking</div>
+                                </div>
+                            </div>
+                            <div style="background:rgba(0,199,60,0.1);border:1px solid rgba(0,199,60,0.2);border-radius:10px;padding:1rem;margin-bottom:1rem;text-align:center;">
+                                <div style="color:#b0b0b0;font-size:0.75rem;margin-bottom:0.3rem;text-transform:uppercase;letter-spacing:1px;">GCash Number</div>
+                                <div id="gcashPreviewNumber" style="color:#00c73c;font-size:1.3rem;font-weight:800;">—</div>
+                            </div>
+                            <div style="background:rgba(0,199,60,0.1);border:1px solid rgba(0,199,60,0.2);border-radius:10px;padding:1rem;text-align:center;">
+                                <div style="color:#b0b0b0;font-size:0.75rem;margin-bottom:0.3rem;text-transform:uppercase;letter-spacing:1px;">Account Name</div>
+                                <div id="gcashPreviewName" style="color:#fff;font-size:1rem;font-weight:700;">—</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background:rgba(33,150,243,0.1);border:1px solid #2196f3;border-radius:12px;padding:1.5rem;">
+                        <h3 style="color:#2196f3;margin-bottom:0.8rem;">ℹ️ How it works</h3>
+                        <p style="color:var(--text-secondary);font-size:0.88rem;line-height:1.8;">When a user selects <strong>GCash</strong> as payment method, a popup appears showing your GCash number, account name, and QR code. The user scans or copies the number and sends the exact booking amount. Their booking stays <strong>Pending</strong> until you approve it in <strong>Bookings → ✅ Approve</strong>.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hairstyles -->
+            <div id="hairstylesSection" class="hidden">
+                <div class="content-section">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;">
+                        <h2 style="margin-bottom:0;">💇 Hairstyles Management</h2>
+                        <button onclick="openHairstyleAdd()" style="background:linear-gradient(135deg,#FFD700,#FFA500);color:#000;border:none;padding:0.8rem 1.5rem;border-radius:12px;font-family:'Poppins',sans-serif;font-weight:700;cursor:pointer;font-size:0.9rem;transition:all 0.3s;box-shadow:0 8px 20px rgba(255,215,0,0.25);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">➕ Add New Hairstyle</button>
+                    </div>
+                    <div id="hairstylesAdminGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;"></div>
+                </div>
+            </div>
+
+            <!-- Staff -->
+            <div id="staffSection" class="hidden">
+                <div class="content-section">
+                    <h2>👤 Staff Management</h2>
+                    <form onsubmit="addStaff(event)" style="max-width:600px;margin-bottom:2rem;">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+                            <div class="form-group"><label>Staff Name</label><input type="text" id="staffName" placeholder="Enter name" required></div>
+                            <div class="form-group"><label>Specialty</label><input type="text" id="staffSpecialty" placeholder="e.g., Fades" required></div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:auto;padding:0.9rem 2rem;">Add Staff</button>
+                    </form>
+                    <h3 style="color:var(--accent);margin-top:2rem;margin-bottom:1.5rem;">Current Staff</h3>
+                    <table>
+                        <thead><tr><th>Name</th><th>Specialty</th><th>Action</th></tr></thead>
+                        <tbody id="staffTable"><tr><td colspan="3" style="text-align:center;">No staff</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div><!-- end main-content -->
+    </div><!-- end dashboard -->
+</div><!-- end dashboardPage -->
+
+<!-- ════════════ ADMIN DATE PICKER ════════════ -->
+<div id="adminDatePickerModal" class="admin-date-picker-modal hidden">
+    <div class="admin-date-picker-content">
+        <div class="admin-date-picker-header">
+            <h3>📅 Select Vacation Date</h3>
+            <button class="admin-date-picker-close" onclick="closeAdminDatePicker()">&times;</button>
+        </div>
+        <div class="admin-date-picker-body">
+            <div class="admin-calendar-section">
+                <div class="admin-calendar-nav">
+                    <button onclick="adminPreviousMonth()" class="admin-calendar-btn">‹</button>
+                    <h4 id="adminCurrentMonth">March 2026</h4>
+                    <button onclick="adminNextMonth()" class="admin-calendar-btn">›</button>
+                </div>
+                <div class="admin-calendar-grid-header">
+                    <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+                </div>
+                <div class="admin-calendar-grid" id="adminCalendarDays"></div>
+                <div class="admin-calendar-actions">
+                    <button onclick="adminGoToToday()" class="admin-btn-today">📍 Today</button>
+                    <button onclick="adminClearDateSelection()" class="admin-btn-clear">🗑️ Clear</button>
+                </div>
+            </div>
+            <div class="admin-selected-date-display">
+                <div class="admin-selected-label">Selected Date</div>
+                <div class="admin-selected-date-value" id="adminSelectedDateDisplay">—</div>
+                <button onclick="adminConfirmDateSelection()" class="admin-btn-confirm">✓ Confirm Date</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════ CANCEL BOOKING MODAL ════════════ -->
+<div id="cancelBookingModal" class="cancel-booking-modal hidden">
+    <div class="cancel-booking-content">
+        <div class="cancel-booking-icon">❌</div>
+        <h2>Cancel Booking?</h2>
+        <p>Are you sure you want to cancel this booking?</p>
+        <div class="cancel-booking-details">
+            <p><span>Customer:</span> <strong id="cancelCustomerName">—</strong></p>
+            <p><span>Date:</span>     <strong id="cancelBookingDate">—</strong></p>
+            <p><span>Time:</span>     <strong id="cancelBookingTime">—</strong></p>
+            <p><span>Service:</span>  <strong id="cancelBookingService">—</strong></p>
+        </div>
+        <p style="color:#FF6B6B;font-weight:600;margin-bottom:1.2rem;font-size:0.9rem;">This action cannot be undone.</p>
+        <div class="cancel-booking-buttons">
+            <button class="cancel-booking-btn cancel-cancel-btn" onclick="closeCancelBookingModal()">Keep Booking</button>
+            <button class="cancel-booking-btn cancel-confirm-btn" id="confirmCancelBtn">Confirm Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════ GENERIC ALERT MODAL ════════════ -->
+<div id="admAlertModal" class="adm-modal-backdrop">
+    <div class="adm-alert-box type-success" id="admAlertBox">
+        <div class="top-bar"></div>
+        <div class="adm-alert-icon" id="admAlertIcon">✓</div>
+        <div class="adm-alert-title" id="admAlertTitle">Success</div>
+        <div class="adm-alert-msg"   id="admAlertMsg">Operation completed.</div>
+        <button class="adm-alert-ok" id="admAlertOk" onclick="closeAdmAlert()">OK</button>
+    </div>
+</div>
+
+<!-- ════════════ GENERIC CONFIRM MODAL ════════════ -->
+<div id="admConfirmModal" class="adm-modal-backdrop">
+    <div class="adm-confirm-box">
+        <div class="top-bar"></div>
+        <div class="adm-confirm-icon" id="admConfirmIcon">⚠️</div>
+        <div class="adm-confirm-title" id="admConfirmTitle">Are you sure?</div>
+        <div class="adm-confirm-msg"   id="admConfirmMsg">This action cannot be undone.</div>
+        <div class="adm-confirm-detail hidden" id="admConfirmDetail"></div>
+        <div class="adm-confirm-warn"  id="admConfirmWarn"></div>
+        <div class="adm-confirm-btns">
+            <button class="adm-btn-keep"    onclick="closeAdmConfirm(false)" id="admConfirmCancelBtn">Cancel</button>
+            <button class="adm-btn-proceed" onclick="closeAdmConfirm(true)"  id="admConfirmOkBtn">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const ADMIN_USERNAME = 'admin';
+    const ADMIN_PASSWORD = '1234';
+
+    let users       = JSON.parse(localStorage.getItem('users'))       || [];
+    let bookings    = JSON.parse(localStorage.getItem('bookings'))    || [];
+    let staff       = JSON.parse(localStorage.getItem('staff'))       || [{ id:1, name:'Kert', specialty:'All Services' }];
+    let bannedUsers = JSON.parse(localStorage.getItem('bannedUsers')) || [];
+    let schedule    = JSON.parse(localStorage.getItem('schedule'))    || { opening:'08:00', closing:'18:00', duration:30 };
+    let vacationDates = JSON.parse(localStorage.getItem('vacationDates')) || [];
+
+    // ═══════════════════════════════════════════
+    // CUSTOM ALERT & CONFIRM HELPERS
+    // ═══════════════════════════════════════════
+    let _admConfirmCb = null;
+
+    const typeMap = {
+        success: { icon:'✓',  title:'Success',  cls:'type-success' },
+        error:   { icon:'✕',  title:'Error',    cls:'type-error'   },
+        warning: { icon:'⚠️', title:'Warning',  cls:'type-warning' },
+        info:    { icon:'ℹ️', title:'Info',     cls:'type-info'    },
+    };
+
+    function admAlert(msg, type = 'success', title = null, onClose = null) {
+        const t = typeMap[type] || typeMap.success;
+        const box = document.getElementById('admAlertBox');
+        box.className = 'adm-alert-box ' + t.cls;
+        document.getElementById('admAlertIcon').textContent  = t.icon;
+        document.getElementById('admAlertTitle').textContent = title || t.title;
+        document.getElementById('admAlertMsg').textContent   = msg;
+        // store optional callback
+        box._onClose = onClose;
+        document.getElementById('admAlertModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeAdmAlert() {
+        const modal = document.getElementById('admAlertModal');
+        const box   = document.getElementById('admAlertBox');
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+        if (typeof box._onClose === 'function') { box._onClose(); box._onClose = null; }
+    }
+
+    function admConfirm(msg, onConfirm, opts = {}) {
+        document.getElementById('admConfirmTitle').textContent = opts.title || 'Are you sure?';
+        document.getElementById('admConfirmMsg').textContent   = msg;
+        document.getElementById('admConfirmIcon').textContent  = opts.icon  || '⚠️';
+        document.getElementById('admConfirmWarn').textContent  = opts.warn  || '';
+        document.getElementById('admConfirmOkBtn').textContent     = opts.okText     || 'Confirm';
+        document.getElementById('admConfirmCancelBtn').textContent = opts.cancelText || 'Cancel';
+        const detail = document.getElementById('admConfirmDetail');
+        if (opts.details) {
+            detail.innerHTML = opts.details.map(d => `<p><span>${d.label}</span><strong>${d.value}</strong></p>`).join('');
+            detail.classList.remove('hidden');
+        } else {
+            detail.classList.add('hidden');
+        }
+        _admConfirmCb = onConfirm;
+        document.getElementById('admConfirmModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeAdmConfirm(confirmed) {
+        document.getElementById('admConfirmModal').classList.remove('active');
+        document.body.style.overflow = 'auto';
+        if (confirmed && typeof _admConfirmCb === 'function') _admConfirmCb();
+        _admConfirmCb = null;
+    }
+
+    // Close modals on backdrop click
+    document.addEventListener('click', function(e) {
+        if (e.target === document.getElementById('admAlertModal'))   closeAdmAlert();
+        if (e.target === document.getElementById('admConfirmModal'))  closeAdmConfirm(false);
+        if (e.target === document.getElementById('cancelBookingModal')) closeCancelBookingModal();
+        if (e.target === document.getElementById('adminDatePickerModal')) closeAdminDatePicker();
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') { closeAdmAlert(); closeAdmConfirm(false); closeCancelBookingModal(); closeAdminDatePicker(); }
+    });
+
+    // ═══════════════════════════════════════════
+    // AUTH
+    // ═══════════════════════════════════════════
+    window.onload = function() {
+        if (localStorage.getItem('adminSession')) showDashboard();
+    };
+
+    function handleLogin(e) {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const errorMsg = document.getElementById('errorMsg');
+        if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+            localStorage.setItem('adminSession', username);
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            errorMsg.classList.remove('active');
+            showDashboard();
+        } else {
+            errorMsg.textContent = '❌ Invalid credentials';
+            errorMsg.classList.add('active');
+        }
+    }
+
+    function showDashboard() {
+        document.getElementById('loginPage').classList.add('hidden');
+        document.getElementById('dashboardPage').classList.remove('hidden');
+        updateDashboard(); updateUsersTable(); updateBannedUsersTable();
+        updateStaffTable(); updateScheduleDisplay(); updateVacationList();
+    }
+
+    function confirmLogout() {
+        admConfirm('You will be signed out of the admin dashboard.', function() {
+            localStorage.removeItem('adminSession');
+            location.reload();
+        }, { title:'Logout?', icon:'🔐', okText:'Logout', cancelText:'Stay', warn:'Any unsaved changes will be lost.' });
+    }
+
+    // ═══════════════════════════════════════════
+    // NAVIGATION
+    // ═══════════════════════════════════════════
+    function switchSection(section, btn) {
+        document.querySelectorAll('[id*="Section"]').forEach(el => el.classList.add('hidden'));
+        document.getElementById(section + 'Section').classList.remove('hidden');
+        document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        const titles = { dashboard:'Dashboard', bookings:'Manage Bookings', users:'Registered Users', bannedUsers:'Banned Users', schedule:'Schedule Management', vacation:'Vacation Management', staff:'Staff Management', hairstyles:'Hairstyles Management', gcash:'GCash Settings' };
+        document.getElementById('pageTitle').textContent = titles[section] || section;
+        if      (section === 'bookings')   updateBookingsTable();
+        else if (section === 'users')      updateUsersTable();
+        else if (section === 'schedule')   loadScheduleForm();
+        else if (section === 'vacation')   updateVacationList();
+        else if (section === 'hairstyles') renderHairstylesAdmin();
+        else if (section === 'gcash')      loadGcashForm();
+    }
+
+    // ═══════════════════════════════════════════
+    // DASHBOARD
+    // ═══════════════════════════════════════════
+    function updateDashboard() {
+        document.getElementById('totalUsers').textContent    = users.length;
+        document.getElementById('totalBookings').textContent = bookings.length;
+        document.getElementById('pendingBookings').textContent = bookings.filter(b => b.status === 'pending').length;
+        document.getElementById('bannedCount').textContent   = bannedUsers.length;
+    }
+
+    // ═══════════════════════════════════════════
+    // BOOKINGS
+    // ═══════════════════════════════════════════
+    function updateBookingsTable() {
+        const tbody = document.getElementById('bookingsTable');
+        if (bookings.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No bookings</td></tr>'; return; }
+        tbody.innerHTML = bookings.map(b => `
+            <tr>
+                <td><strong>${b.userName || 'N/A'}</strong></td>
+                <td>${b.userEmail || 'N/A'}</td>
+                <td>${new Date(b.date).toLocaleDateString()} ${b.time || 'N/A'}</td>
+                <td>${b.service}</td>
+                <td><span class="badge badge-${b.status}">${b.status}</span></td>
+                <td>
+                    <div style="display:flex;gap:0.5rem;">
+                        ${b.status === 'pending' ? `<button class="btn-small btn-approve" onclick="approveBooking(${b.id})">✅ Approve</button>` : ''}
+                        <button class="btn-small btn-ban" onclick="cancelBooking(${b.id})">❌ Cancel</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function approveBooking(id) {
+        const booking = bookings.find(b => b.id === id);
+        if (!booking) return;
+        admConfirm(`Approve booking for <strong>${booking.userName}</strong>?`, function() {
+            booking.status = 'confirmed';
+            localStorage.setItem('bookings', JSON.stringify(bookings));
+            updateBookingsTable(); updateDashboard();
+            admAlert('Booking has been approved successfully!', 'success', 'Booking Approved ✅');
+        }, {
+            title: 'Approve Booking?', icon: '✅', okText: 'Approve', cancelText: 'Back',
+            details: [
+                { label: '👤 Customer', value: booking.userName  || 'N/A' },
+                { label: '📅 Date',     value: new Date(booking.date).toLocaleDateString() },
+                { label: '⏰ Time',     value: booking.time      || 'N/A' },
+                { label: '✂️ Service',  value: booking.service   || 'N/A' },
+            ]
+        });
+    }
+
+    function cancelBooking(id) {
+        const booking = bookings.find(b => b.id === id);
+        if (!booking) return;
+        document.getElementById('cancelCustomerName').textContent  = booking.userName || 'N/A';
+        document.getElementById('cancelBookingDate').textContent   = new Date(booking.date).toLocaleDateString();
+        document.getElementById('cancelBookingTime').textContent   = booking.time    || 'N/A';
+        document.getElementById('cancelBookingService').textContent= booking.service || 'N/A';
+        document.getElementById('confirmCancelBtn').onclick = function() { performCancelBooking(id); };
+        showCancelBookingModal();
+    }
+
+    function showCancelBookingModal() {
+        const modal = document.getElementById('cancelBookingModal');
+        modal.classList.remove('hidden'); modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeCancelBookingModal() {
+        const modal = document.getElementById('cancelBookingModal');
+        modal.classList.remove('active'); modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+    function performCancelBooking(id) {
+        bookings = bookings.filter(b => b.id !== id);
+        localStorage.setItem('bookings', JSON.stringify(bookings));
+        updateBookingsTable(); updateDashboard();
+        closeCancelBookingModal();
+        admAlert('Booking has been cancelled and removed.', 'error', 'Booking Cancelled');
+    }
+
+    // ═══════════════════════════════════════════
+    // USERS
+    // ═══════════════════════════════════════════
+    function updateUsersTable() {
+        const tbody = document.getElementById('usersTable');
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (users.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No users</td></tr>'; return; }
+        tbody.innerHTML = users.map(u => {
+            const isActive = currentUser && currentUser.email === u.email;
+            const statusBadge = isActive
+                ? '<span class="status-badge status-active">🟢 Active</span>'
+                : '<span class="status-badge status-inactive">⚫ Inactive</span>';
+            return `
+                <tr>
+                    <td><strong>${u.name}</strong></td>
+                    <td>${u.email}</td>
+                    <td>${u.phone}</td>
+                    <td>${statusBadge}</td>
+                    <td>${u.createdAt}</td>
+                    <td><button class="btn-small btn-ban" onclick="banUser('${u.email}','${u.name}')">🚫 Ban</button></td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function updateBannedUsersTable() {
+        const tbody = document.getElementById('bannedUsersTable');
+        if (bannedUsers.length === 0) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No banned users</td></tr>'; return; }
+        tbody.innerHTML = bannedUsers.map(bu => `
+            <tr>
+                <td><strong>${bu.name}</strong></td>
+                <td>${bu.email}</td>
+                <td>${bu.bannedDate}</td>
+                <td><button class="btn-small btn-unban" onclick="unbanUser('${bu.email}','${bu.name}')">✅ Unban</button></td>
+            </tr>
+        `).join('');
+    }
+
+    function banUser(email, name) {
+        if (bannedUsers.find(b => b.email === email)) {
+            admAlert(`${name} is already banned.`, 'warning', 'Already Banned ⚠️');
+            return;
+        }
+        admConfirm(`Ban <strong>${name}</strong>? They will lose access immediately.`, function() {
+            bannedUsers.push({ email, name, bannedDate: new Date().toLocaleString() });
+            localStorage.setItem('bannedUsers', JSON.stringify(bannedUsers));
+            adminBroadcast('bannedUsers');
+            admAlert(`${name} has been banned successfully.`, 'success', 'User Banned 🚫');
+            updateUsersTable(); updateBannedUsersTable(); updateDashboard();
+        }, {
+            title: 'Ban User?', icon: '🚫', okText: 'Ban User', cancelText: 'Cancel',
+            warn: 'This will immediately revoke their access to the site.',
+            details: [{ label: '👤 User', value: name }, { label: '📧 Email', value: email }]
+        });
+    }
+
+    function unbanUser(email, name) {
+        admConfirm(`Restore access for <strong>${name || email}</strong>?`, function() {
+            bannedUsers = bannedUsers.filter(b => b.email !== email);
+            localStorage.setItem('bannedUsers', JSON.stringify(bannedUsers));
+            adminBroadcast('bannedUsers');
+            admAlert(`${name || email} has been unbanned.`, 'success', 'User Unbanned ✅');
+            updateBannedUsersTable(); updateDashboard();
+        }, { title: 'Unban User?', icon: '✅', okText: 'Unban', cancelText: 'Cancel' });
+    }
+
+    // ═══════════════════════════════════════════
+    // STAFF
+    // ═══════════════════════════════════════════
+    function addStaff(e) {
+        e.preventDefault();
+        const newStaff = { id: Date.now(), name: document.getElementById('staffName').value, specialty: document.getElementById('staffSpecialty').value };
+        staff.push(newStaff);
+        localStorage.setItem('staff', JSON.stringify(staff));
+        document.getElementById('staffName').value = '';
+        document.getElementById('staffSpecialty').value = '';
+        updateStaffTable();
+        admAlert(`${newStaff.name} has been added to the team.`, 'success', 'Staff Added ✅');
+    }
+
+    function updateStaffTable() {
+        const tbody = document.getElementById('staffTable');
+        tbody.innerHTML = staff.map(s => `
+            <tr>
+                <td><strong>${s.name}</strong></td>
+                <td>${s.specialty}</td>
+                <td><button class="btn-small btn-ban" onclick="removeStaff(${s.id},'${s.name}')">Remove</button></td>
+            </tr>
+        `).join('');
+    }
+
+    function removeStaff(id, name) {
+        admConfirm(`Remove <strong>${name}</strong> from the team?`, function() {
+            staff = staff.filter(s => s.id !== id);
+            localStorage.setItem('staff', JSON.stringify(staff));
+            updateStaffTable();
+            admAlert(`${name} has been removed.`, 'info', 'Staff Removed');
+        }, { title: 'Remove Staff?', icon: '👤', okText: 'Remove', cancelText: 'Keep' });
+    }
+
+    // ═══════════════════════════════════════════
+    // SCHEDULE
+    // ═══════════════════════════════════════════
+    function loadScheduleForm() {
+        document.getElementById('scheduleOpening').value  = schedule.opening  || '08:00';
+        document.getElementById('scheduleClosing').value  = schedule.closing  || '18:00';
+        document.getElementById('scheduleDuration').value = schedule.duration || 30;
+        updateScheduleDisplay();
+    }
+
+    function updateScheduleDisplay() {
+        document.getElementById('displayOpening').textContent = convertTo12Hour(schedule.opening  || '08:00');
+        document.getElementById('displayClosing').textContent = convertTo12Hour(schedule.closing  || '18:00');
+        document.getElementById('displayDuration').textContent = (schedule.duration || 30) + ' minutes';
+    }
+
+    function convertTo12Hour(time24) {
+        if (!time24) return '8:00 AM';
+        const [hours, minutes] = time24.split(':');
+        const hour = parseInt(hours);
+        return (hour % 12 || 12).toString().padStart(2,'0') + ':' + minutes + ' ' + (hour >= 12 ? 'PM' : 'AM');
+    }
+
+    function saveSchedule(event) {
+        event.preventDefault();
+        const opening  = document.getElementById('scheduleOpening').value;
+        const closing  = document.getElementById('scheduleClosing').value;
+        const duration = parseInt(document.getElementById('scheduleDuration').value);
+        if (!opening)  { admAlert('Please select an opening time.',          'warning'); return; }
+        if (!closing)  { admAlert('Please select a closing time.',           'warning'); return; }
+        if (!duration) { admAlert('Please select a time slot duration.',     'warning'); return; }
+        if (opening >= closing) { admAlert('Closing time must be after opening time.', 'error'); return; }
+        schedule = { opening, closing, duration };
+        localStorage.setItem('schedule', JSON.stringify(schedule));
+        adminBroadcast('schedule');
+        admAlert(`Schedule saved!\n\nOpening: ${convertTo12Hour(opening)}\nClosing: ${convertTo12Hour(closing)}\nSlot: ${duration} minutes`, 'success', 'Schedule Updated ✅');
+        updateScheduleDisplay();
+    }
+
+    // ═══════════════════════════════════════════
+    // VACATION
+    // ═══════════════════════════════════════════
+    function addVacation(event) {
+        event.preventDefault();
+        const vacationDate   = document.getElementById('vacationDate').value;
+        const vacationReason = document.getElementById('vacationReason').value || 'Closed';
+        if (!vacationDate) { admAlert('Please select a vacation date.', 'warning'); return; }
+        if (vacationDates.some(v => v.date === vacationDate)) { admAlert('This date is already marked as vacation.', 'warning', 'Already Added ⚠️'); return; }
+        const vacation = { id: Date.now(), date: vacationDate, reason: vacationReason, createdAt: new Date().toLocaleString() };
+        vacationDates.push(vacation);
+        localStorage.setItem('vacationDates', JSON.stringify(vacationDates));
+        adminBroadcast('vacationDates');
+        admAlert(`Vacation date added: ${new Date(vacationDate).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'})}`, 'success', 'Vacation Added 🏖️');
+        document.getElementById('vacationDate').value  = '';
+        document.getElementById('vacationReason').value = '';
+        updateVacationList();
+    }
+
+    function updateVacationList() {
+        const container = document.getElementById('vacationList');
+        if (vacationDates.length === 0) { container.innerHTML = '<div style="color:var(--text-secondary);text-align:center;padding:2rem;">No vacation dates set</div>'; return; }
+        const sorted = [...vacationDates].sort((a,b) => new Date(a.date) - new Date(b.date));
+        container.innerHTML = sorted.map(v => {
+            const displayDate = new Date(v.date).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+            return `
+                <div style="background:rgba(76,175,80,0.2);border-left:4px solid #4caf50;padding:1.5rem;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <p style="color:var(--accent);font-weight:700;font-size:1.1rem;margin-bottom:0.3rem;">📅 ${displayDate}</p>
+                        <p style="color:var(--text-secondary);font-size:0.9rem;">Reason: ${v.reason}</p>
+                    </div>
+                    <button onclick="deleteVacation(${v.id},'${displayDate}')" style="background:rgba(244,67,54,0.2);color:#f44336;border:1px solid rgba(244,67,54,0.3);padding:0.7rem 1.2rem;border-radius:8px;cursor:pointer;font-weight:600;font-family:'Poppins',sans-serif;">
+                        🗑️ Delete
+                    </button>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function deleteVacation(id, displayDate) {
+        admConfirm(`Delete vacation date <strong>${displayDate}</strong>?`, function() {
+            vacationDates = vacationDates.filter(v => v.id !== id);
+            localStorage.setItem('vacationDates', JSON.stringify(vacationDates));
+            adminBroadcast('vacationDates');
+            admAlert('Vacation date has been removed.', 'success', 'Deleted ✅');
+            updateVacationList();
+        }, { title:'Delete Vacation?', icon:'🗑️', okText:'Delete', cancelText:'Keep' });
+    }
+
+    // ═══════════════════════════════════════════
+    // ADMIN DATE PICKER
+    // ═══════════════════════════════════════════
+    let adminDatePickerState = { currentMonth: new Date().getMonth(), currentYear: new Date().getFullYear(), selectedDate: null };
+
+    function openAdminDatePicker() {
+        const modal = document.getElementById('adminDatePickerModal');
+        modal.classList.remove('hidden'); modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        const dateInput = document.getElementById('vacationDate');
+        if (dateInput.value) {
+            const [year,month,day] = dateInput.value.split('-');
+            adminDatePickerState.currentYear  = parseInt(year);
+            adminDatePickerState.currentMonth = parseInt(month) - 1;
+            adminDatePickerState.selectedDate = new Date(year, month-1, day);
+        }
+        adminRenderCalendar();
+    }
+
+    function closeAdminDatePicker() {
+        const modal = document.getElementById('adminDatePickerModal');
+        modal.classList.remove('active'); modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    function adminRenderCalendar() {
+        const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        const { currentMonth: cm, currentYear: cy } = adminDatePickerState;
+        document.getElementById('adminCurrentMonth').textContent = `${monthNames[cm]} ${cy}`;
+        const firstDay = new Date(cy,cm,1).getDay();
+        const daysInMonth = new Date(cy,cm+1,0).getDate();
+        const daysInPrevMonth = new Date(cy,cm,0).getDate();
+        const grid = document.getElementById('adminCalendarDays');
+        grid.innerHTML = '';
+        for (let i = firstDay-1; i >= 0; i--) grid.appendChild(adminCreateDayElement(daysInPrevMonth-i, true));
+        for (let d = 1; d <= daysInMonth; d++) grid.appendChild(adminCreateDayElement(d, false, cy, cm));
+        const rem = 42 - grid.children.length;
+        for (let d = 1; d <= rem; d++) grid.appendChild(adminCreateDayElement(d, true));
+        adminUpdateSelectedDateDisplay();
+    }
+
+    function adminCreateDayElement(day, isOtherMonth, year, month) {
+        const el = document.createElement('div');
+        el.className = 'admin-calendar-day';
+        el.textContent = day;
+        if (isOtherMonth) { el.classList.add('other-month'); return el; }
+        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+        const today   = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+        if (dateStr < todayStr) { el.classList.add('other-month'); el.style.opacity='0.3'; el.style.cursor='not-allowed'; return el; }
+        if (dateStr === todayStr) el.classList.add('today');
+        if (adminDatePickerState.selectedDate) {
+            const s = adminDatePickerState.selectedDate;
+            const selStr = `${s.getFullYear()}-${String(s.getMonth()+1).padStart(2,'0')}-${String(s.getDate()).padStart(2,'0')}`;
+            if (dateStr === selStr) el.classList.add('selected');
+        }
+        el.style.cursor = 'pointer';
+        el.onclick = () => { adminDatePickerState.selectedDate = new Date(year,month,day); adminRenderCalendar(); };
+        return el;
+    }
+
+    function adminPreviousMonth() {
+        if (adminDatePickerState.currentMonth === 0) { adminDatePickerState.currentMonth=11; adminDatePickerState.currentYear--; }
+        else adminDatePickerState.currentMonth--;
+        adminRenderCalendar();
+    }
+    function adminNextMonth() {
+        if (adminDatePickerState.currentMonth === 11) { adminDatePickerState.currentMonth=0; adminDatePickerState.currentYear++; }
+        else adminDatePickerState.currentMonth++;
+        adminRenderCalendar();
+    }
+    function adminGoToToday() {
+        const today = new Date();
+        adminDatePickerState.currentMonth = today.getMonth();
+        adminDatePickerState.currentYear  = today.getFullYear();
+        adminDatePickerState.selectedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        adminRenderCalendar();
+    }
+    function adminClearDateSelection() {
+        adminDatePickerState.selectedDate = null;
+        document.getElementById('vacationDate').value = '';
+        document.getElementById('adminSelectedDateDisplay').textContent = '—';
+        adminRenderCalendar();
+    }
+    function adminUpdateSelectedDateDisplay() {
+        const display = document.getElementById('adminSelectedDateDisplay');
+        display.textContent = adminDatePickerState.selectedDate
+            ? adminDatePickerState.selectedDate.toLocaleDateString('en-US',{weekday:'short',year:'numeric',month:'short',day:'numeric'})
+            : '—';
+    }
+    function adminConfirmDateSelection() {
+        if (adminDatePickerState.selectedDate) {
+            const d = adminDatePickerState.selectedDate;
+            document.getElementById('vacationDate').value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            closeAdminDatePicker();
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const di = document.getElementById('vacationDate');
+        if (di) {
+            di.addEventListener('click',  e => { e.preventDefault(); openAdminDatePicker(); });
+            di.addEventListener('focus',  e => { e.preventDefault(); openAdminDatePicker(); });
+        }
+    });
+</script>
+<!-- ════════════ HAIRSTYLE EDIT MODAL ════════════ -->
+<div id="hairstyleEditModal" class="adm-modal-backdrop">
+    <div style="background:linear-gradient(145deg,#2a2a2a,#1a1a1a);border:2px solid var(--accent);border-radius:24px;padding:2rem;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);position:relative;">
+        <div style="position:absolute;top:0;left:0;right:0;height:5px;border-radius:24px 24px 0 0;background:linear-gradient(90deg,#FFD700,#FFA500,#FFD700);background-size:200%;animation:shimmerBar 2s linear infinite;"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;margin-top:0.5rem;">
+            <h3 id="heModalTitle" style="font-family:'Playfair Display',serif;color:var(--accent);font-size:1.5rem;margin:0;">✏️ Edit Hairstyle</h3>
+            <button onclick="closeHairstyleEdit()" style="background:none;border:none;color:var(--text-secondary);font-size:1.8rem;cursor:pointer;transition:all 0.3s;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:8px;" onmouseover="this.style.color='#f44336'" onmouseout="this.style.color='var(--text-secondary)'">✕</button>
+        </div>
+
+        <!-- Image upload area -->
+        <div style="position:relative;margin-bottom:1.5rem;">
+            <div id="heImagePreview" onclick="document.getElementById('heImageInput').click()" style="width:100%;height:200px;border:2px dashed rgba(255,215,0,0.3);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:rgba(255,215,0,0.04);overflow:hidden;transition:all 0.3s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='rgba(255,215,0,0.3)'">
+                <span id="heImagePlaceholder" style="font-size:2.5rem;margin-bottom:0.5rem;">📷</span>
+                <span style="color:var(--text-secondary);font-size:0.85rem;" id="heImageHint">Click to upload image</span>
+                <img id="heImageDisplayed" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;">
+            </div>
+            <button onclick="removeHairstyleImage()" title="Remove image" style="position:absolute;top:8px;right:8px;background:rgba(244,67,54,0.8);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center;transition:all 0.3s;" onmouseover="this.style.background='#f44336'" onmouseout="this.style.background='rgba(244,67,54,0.8)'">✕</button>
+        </div>
+        <input type="file" id="heImageInput" accept="image/*" style="display:none;" onchange="handleHairstyleImage(event)">
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+            <div class="form-group" style="margin-bottom:0;">
+                <label>Name</label>
+                <input type="text" id="heName" placeholder="e.g. TUF GENT">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label>Price (₱)</label>
+                <input type="number" id="hePrice" placeholder="380" min="0">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Category</label>
+            <select id="heCategory">
+                <option value="regular haircut">Regular Haircut</option>
+                <option value="haircut and shave">Haircut &amp; Shave</option>
+                <option value="home service">Home Service</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <textarea id="heDescription" rows="3" placeholder="Short description of the hairstyle..." style="width:100%;padding:0.8rem 1rem;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.12);border-radius:12px;color:var(--text-primary);font-family:'Poppins',sans-serif;resize:vertical;font-size:0.9rem;line-height:1.6;"></textarea>
+        </div>
+        <div style="display:flex;gap:0.8rem;margin-top:0.5rem;">
+            <button onclick="closeHairstyleEdit()" style="flex:1;padding:0.9rem;background:rgba(255,255,255,0.08);border:2px solid var(--border-color);border-radius:14px;color:var(--text-primary);font-family:'Poppins',sans-serif;font-weight:700;cursor:pointer;transition:all 0.3s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border-color)'">Cancel</button>
+            <button onclick="saveHairstyleEdit()" id="heSaveBtn" style="flex:2;padding:0.9rem;background:linear-gradient(135deg,#FFD700,#FFA500);color:#000;border:none;border-radius:14px;font-family:'Poppins',sans-serif;font-weight:700;font-size:0.95rem;cursor:pointer;transition:all 0.3s;box-shadow:0 10px 25px rgba(255,215,0,0.25);">💾 Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Hairstyle admin grid card */
+.hs-admin-card {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid var(--border-color);
+    border-radius: 18px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+.hs-admin-card:hover { border-color: var(--accent); box-shadow: 0 10px 35px rgba(255,215,0,0.12); transform: translateY(-4px); }
+.hs-admin-thumb {
+    width: 100%; height: 160px;
+    background: linear-gradient(135deg,#1a1a1a,#2a2a2a);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 3rem; position: relative; overflow: hidden;
+}
+.hs-admin-thumb img { width:100%;height:100%;object-fit:cover; }
+.hs-admin-body { padding: 1.2rem; }
+.hs-admin-name { font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:800; color:var(--accent); margin-bottom:0.3rem; }
+.hs-admin-cat  { font-size:0.75rem; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:0.5rem; }
+.hs-admin-desc { font-size:0.8rem; color:var(--text-secondary); line-height:1.5; margin-bottom:0.8rem; display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.hs-admin-footer { display:flex; justify-content:space-between; align-items:center; padding-top:0.8rem; border-top:1px solid var(--border-color); }
+.hs-admin-price { font-family:'Playfair Display',serif; font-size:1.4rem; font-weight:800; color:var(--accent); }
+.hs-admin-edit  { background:rgba(255,215,0,0.15); border:1px solid rgba(255,215,0,0.3); color:var(--accent); padding:0.5rem 1rem; border-radius:8px; cursor:pointer; font-weight:700; font-size:0.82rem; transition:all 0.3s; font-family:'Poppins',sans-serif; }
+.hs-admin-edit:hover { background:rgba(255,215,0,0.3); transform:translateY(-2px); }
+</style>
+
+<script>
+// ═══════════════════════════════════════════
+// HAIRSTYLES DEFAULT DATA (mirror of auth.html)
+// ═══════════════════════════════════════════
+const hairstylesDefault = [
+    { id:1,  name:'TUF GENT',            category:'regular haircut',  price:380, emoji:'💼', description:'A Timeless Cut for Every Gentleman. Low-maintenance with a touch of class, perfect for the modern gentleman.' },
+    { id:2,  name:'TONY CUT',            category:'regular haircut',  price:380, emoji:'✨', description:'Low-key High Impact. A modern remix of the classic military cut offering a clean, confident look without the fuss.' },
+    { id:3,  name:'THE BANKER CUT',      category:'regular haircut',  price:380, emoji:'🏦', description:'Sharp Lines, Sharper Mind. Classic haircut following contours of your head for a clean, confident professional look.' },
+    { id:4,  name:'BASTARD CUT',         category:'regular haircut',  price:380, emoji:'🎭', description:'Rebellious Charm. Combining iconic era with American Golden Age style for a clean, confident look with refined edge.' },
+    { id:5,  name:'FADE',                category:'regular haircut',  price:300, emoji:'⚡', description:'Sharp and Clean. Smooth transition from short to shorter sides, perfect for precision and style in one cut.' },
+    { id:6,  name:'UNDERCUT',            category:'regular haircut',  price:300, emoji:'🎯', description:'Bold Definition. Classic style with dramatic contrast, making a statement with clean, sharp lines and modern appeal.' },
+    { id:7,  name:'CREW CUT',            category:'regular haircut',  price:280, emoji:'🎖️', description:'Classic & Timeless. Short, clean, and professional - the ultimate versatile haircut for all occasions.' },
+    { id:8,  name:'HOOLIGAN CUT',        category:'haircut and shave',price:380, emoji:'🎪', description:'Versatile Canvas. Classic cut with a clean straight-razor shave — confidence in every detail.' },
+    { id:9,  name:'BUGSY CUT',           category:'haircut and shave',price:380, emoji:'🌟', description:'Outlined Edge, Effortless Style. Slicked-back cut paired with a precision shave for a polished finish.' },
+    { id:10, name:'SLICK BACK',          category:'haircut and shave',price:380, emoji:'💎', description:'Sophisticated Elegance. Sleek cut plus full straight-razor shave — perfect for formal occasions.' },
+    { id:11, name:'PROFESSIONAL',        category:'haircut and shave',price:350, emoji:'💼', description:'Business Ready. Clean executive cut with a smooth shave — the complete grooming package for the workplace.' },
+    { id:12, name:'TEXTURED TOP',        category:'haircut and shave',price:350, emoji:'🌊', description:'Modern Texture. Layered textured cut on top paired with a clean fade and precision shave on the sides.' },
+    { id:13, name:'HOME REGULAR CUT',    category:'home service',     price:450, emoji:'🏠', description:'Classic haircut delivered to your doorstep. All tools and products brought to you — no travel required.' },
+    { id:14, name:'HOME FADE',           category:'home service',     price:500, emoji:'🚗', description:'Premium fade service at home. Our barber comes to you with full equipment for a sharp fade finish.' },
+    { id:15, name:'HOME HAIRCUT + SHAVE',category:'home service',     price:550, emoji:'🛋️', description:'Complete grooming at your own comfort zone. Haircut and straight-razor shave, delivered at home.' },
+    { id:16, name:'HOME PREMIUM PACKAGE',category:'home service',     price:650, emoji:'👑', description:'The full VIP experience at home. Cut, shave, and styling with premium products — all at your door.' },
+];
+
+function getAdminHairstyles() {
+    // Custom hairstyles (added by admin) come first, then defaults merged with overrides
+    const saved = JSON.parse(localStorage.getItem('kertHairstyles')) || [];
+    // Custom entries have id >= 100
+    const customs = saved.filter(s => s.id >= 100);
+    const merged  = hairstylesDefault.map(def => {
+        const ov = saved.find(s => s.id === def.id);
+        return ov ? { ...def, ...ov } : { ...def };
+    });
+    return [...merged, ...customs];
+}
+
+// ═══════════════════════════════════════════
+// RENDER HAIRSTYLES ADMIN GRID
+// ═══════════════════════════════════════════
+function renderHairstylesAdmin() {
+    const list = getAdminHairstyles();
+    const grid = document.getElementById('hairstylesAdminGrid');
+    const catLabel = { 'regular haircut':'Regular Haircut', 'haircut and shave':'Haircut & Shave', 'home service':'Home Service' };
+
+    if (list.length === 0) {
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--text-secondary);">No hairstyles yet. Click <strong style="color:var(--accent);">➕ Add New Hairstyle</strong> to get started.</div>`;
+        return;
+    }
+
+    grid.innerHTML = list.map(h => {
+        const isCustom = h.id >= 100;
+        const thumbContent = h.image
+            ? `<img src="${h.image}" alt="${h.name}" style="width:100%;height:100%;object-fit:cover;">`
+            : `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem;height:100%;color:var(--text-secondary);">
+                 <span style="font-size:2.5rem;">📷</span>
+                 <span style="font-size:0.75rem;">No image</span>
+               </div>`;
+        return `
+        <div class="hs-admin-card">
+            <div class="hs-admin-thumb">${thumbContent}</div>
+            <div class="hs-admin-body">
+                <div class="hs-admin-name">${h.name}</div>
+                <div class="hs-admin-cat">${catLabel[h.category] || h.category}</div>
+                <div class="hs-admin-desc">${h.description}</div>
+                <div class="hs-admin-footer">
+                    <span class="hs-admin-price">₱${h.price}</span>
+                    <div style="display:flex;gap:0.5rem;">
+                        <button class="hs-admin-edit" onclick="openHairstyleEdit(${h.id})">✏️ Edit</button>
+                        <button style="background:rgba(244,67,54,0.15);border:1px solid rgba(244,67,54,0.3);color:#f44336;padding:0.5rem 0.8rem;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.82rem;transition:all 0.3s;font-family:'Poppins',sans-serif;" onclick="deleteHairstyle(${h.id},'${h.name.replace(/'/g,"&#39;")}')" onmouseover="this.style.background='rgba(244,67,54,0.3)'" onmouseout="this.style.background='rgba(244,67,54,0.15)'">🗑️</button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// ═══════════════════════════════════════════
+// DELETE HAIRSTYLE
+// ═══════════════════════════════════════════
+function deleteHairstyle(id, name) {
+    admConfirm(`Delete hairstyle <strong>${name}</strong>?`, function() {
+        let saved = JSON.parse(localStorage.getItem('kertHairstyles')) || [];
+        if (id >= 100) {
+            // Custom — fully remove
+            saved = saved.filter(s => s.id !== id);
+        } else {
+            // Default — mark as deleted so it won't show on user side
+            const idx = saved.findIndex(s => s.id === id);
+            if (idx !== -1) saved[idx] = { ...saved[idx], deleted: true };
+            else saved.push({ id, deleted: true });
+        }
+        localStorage.setItem('kertHairstyles', JSON.stringify(saved));
+        adminBroadcast('kertHairstyles');
+        renderHairstylesAdmin();
+        admAlert(`"${name}" has been deleted.`, 'error', 'Hairstyle Deleted 🗑️');
+    }, { title:'Delete Hairstyle?', icon:'🗑️', okText:'Delete', cancelText:'Keep',
+         warn:'This will remove the hairstyle from the user gallery.' });
+}
+
+// ═══════════════════════════════════════════
+// ADD NEW HAIRSTYLE
+// ═══════════════════════════════════════════
+function openHairstyleAdd() {
+    _heCurrentId    = null;  // null = add mode
+    _heCurrentImage = null;
+    _heIsNew        = true;
+
+    document.getElementById('heName').value        = '';
+    document.getElementById('hePrice').value       = '';
+    document.getElementById('heCategory').value    = 'regular haircut';
+    document.getElementById('heDescription').value = '';
+    document.getElementById('heModalTitle').textContent = '➕ Add New Hairstyle';
+    document.getElementById('heSaveBtn').textContent    = '➕ Add Hairstyle';
+
+    const img  = document.getElementById('heImageDisplayed');
+    const ph   = document.getElementById('heImagePlaceholder');
+    const hint = document.getElementById('heImageHint');
+    img.src = ''; img.style.display = 'none';
+    ph.textContent = '📷'; ph.style.display = 'block';
+    hint.textContent = 'Click to upload image'; hint.style.display = 'block';
+
+    document.getElementById('hairstyleEditModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+// ═══════════════════════════════════════════
+// EDIT MODAL
+// ═══════════════════════════════════════════
+let _heCurrentId = null;
+let _heCurrentImage = null;
+let _heIsNew = false;
+
+function openHairstyleEdit(id) {
+    const list = getAdminHairstyles();
+    const h = list.find(x => x.id === id);
+    if (!h) return;
+    _heCurrentId    = id;
+    _heCurrentImage = h.image || null;
+    _heIsNew        = false;
+
+    document.getElementById('heName').value        = h.name;
+    document.getElementById('hePrice').value       = h.price;
+    document.getElementById('heCategory').value    = h.category;
+    document.getElementById('heDescription').value = h.description;
+    document.getElementById('heModalTitle').textContent = '✏️ Edit Hairstyle';
+    document.getElementById('heSaveBtn').textContent    = '💾 Save Changes';
+
+    const img  = document.getElementById('heImageDisplayed');
+    const ph   = document.getElementById('heImagePlaceholder');
+    const hint = document.getElementById('heImageHint');
+    if (h.image) {
+        img.src = h.image; img.style.display = 'block';
+        ph.style.display = 'none'; hint.style.display = 'none';
+    } else {
+        img.src = ''; img.style.display = 'none';
+        ph.textContent = h.emoji || '✂️'; ph.style.display = 'block';
+        hint.textContent = 'Click to upload image'; hint.style.display = 'block';
+    }
+
+    document.getElementById('hairstyleEditModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeHairstyleEdit() {
+    document.getElementById('hairstyleEditModal').classList.remove('active');
+    document.body.style.overflow = 'auto';
+    _heCurrentId = null; _heCurrentImage = null; _heIsNew = false;
+    document.getElementById('heImageInput').value = '';
+}
+
+function handleHairstyleImage(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+        admAlert('Image must be smaller than 2 MB.', 'warning', 'File Too Large');
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        _heCurrentImage = e.target.result;
+        const img  = document.getElementById('heImageDisplayed');
+        const ph   = document.getElementById('heImagePlaceholder');
+        const hint = document.getElementById('heImageHint');
+        img.src = _heCurrentImage; img.style.display = 'block';
+        ph.style.display = 'none'; hint.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeHairstyleImage() {
+    _heCurrentImage = '__REMOVE__';
+    const img  = document.getElementById('heImageDisplayed');
+    const ph   = document.getElementById('heImagePlaceholder');
+    const hint = document.getElementById('heImageHint');
+    img.src = ''; img.style.display = 'none';
+    ph.textContent = '📷'; ph.style.display = 'block';
+    hint.textContent = 'Click to upload image'; hint.style.display = 'block';
+    document.getElementById('heImageInput').value = '';
+}
+
+function saveHairstyleEdit() {
+    const name  = document.getElementById('heName').value.trim();
+    const price = parseInt(document.getElementById('hePrice').value);
+    const cat   = document.getElementById('heCategory').value;
+    const desc  = document.getElementById('heDescription').value.trim();
+
+    if (!name)              { admAlert('Please enter a name.',        'warning'); return; }
+    if (!price || price < 0){ admAlert('Please enter a valid price.', 'warning'); return; }
+    if (!desc)              { admAlert('Please enter a description.', 'warning'); return; }
+
+    let saved = JSON.parse(localStorage.getItem('kertHairstyles')) || [];
+
+    if (_heIsNew) {
+        // Generate new id (100+)
+        const maxId = saved.filter(s => s.id >= 100).reduce((m, s) => Math.max(m, s.id), 99);
+        const newId = maxId + 1;
+        const entry = { id: newId, name, price, category: cat, description: desc, emoji: '✂️' };
+        if (_heCurrentImage && _heCurrentImage !== '__REMOVE__') entry.image = _heCurrentImage;
+        saved.push(entry);
+        localStorage.setItem('kertHairstyles', JSON.stringify(saved));
+        adminBroadcast('kertHairstyles');
+        closeHairstyleEdit();
+        renderHairstylesAdmin();
+        admAlert(`"${name}" has been added to the gallery.`, 'success', 'Hairstyle Added ✅');
+    } else {
+        if (_heCurrentId === null) return;
+        const idx = saved.findIndex(s => s.id === _heCurrentId);
+        const entry = { id: _heCurrentId, name, price, category: cat, description: desc };
+        if (_heCurrentImage === '__REMOVE__') {
+            entry.image = null;
+        } else if (_heCurrentImage) {
+            entry.image = _heCurrentImage;
+        }
+        if (idx !== -1) saved[idx] = { ...saved[idx], ...entry };
+        else            saved.push(entry);
+        localStorage.setItem('kertHairstyles', JSON.stringify(saved));
+        adminBroadcast('kertHairstyles');
+        closeHairstyleEdit();
+        renderHairstylesAdmin();
+        admAlert(`"${name}" has been updated successfully.`, 'success', 'Hairstyle Updated ✅');
+    }
+}
+
+// ═══════════════════════════════════════════
+// GCASH ADMIN SETTINGS
+// ═══════════════════════════════════════════
+let _gcashQrData = null;
+
+function loadGcashForm() {
+    const cfg = JSON.parse(localStorage.getItem('kertGcash')) || {};
+    document.getElementById('gcashNumberInput').value      = cfg.number      || '';
+    document.getElementById('gcashNameInput').value        = cfg.name        || '';
+    document.getElementById('gcashPaymentLinkInput').value = cfg.paymentLink || '';
+
+    document.getElementById('gcashPreviewNumber').textContent = cfg.number || '—';
+    document.getElementById('gcashPreviewName').textContent   = cfg.name   || '—';
+
+    _gcashQrData = cfg.qrImage || null;
+    const img  = document.getElementById('gcashQrImg');
+    const ph   = document.getElementById('gcashQrPlaceholder');
+    const hint = document.getElementById('gcashQrHint');
+    if (_gcashQrData) {
+        img.src = _gcashQrData; img.style.display = 'block';
+        ph.style.display = 'none'; hint.style.display = 'none';
+    } else {
+        img.src = ''; img.style.display = 'none';
+        ph.style.display = 'block'; hint.style.display = 'block';
+    }
+
+    document.getElementById('gcashNumberInput').oninput = function() {
+        document.getElementById('gcashPreviewNumber').textContent = this.value || '—';
+    };
+    document.getElementById('gcashNameInput').oninput = function() {
+        document.getElementById('gcashPreviewName').textContent = this.value || '—';
+    };
+}
+
+function handleGcashQr(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { admAlert('QR image must be under 2 MB.', 'warning'); return; }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        _gcashQrData = e.target.result;
+        const img  = document.getElementById('gcashQrImg');
+        const ph   = document.getElementById('gcashQrPlaceholder');
+        const hint = document.getElementById('gcashQrHint');
+        img.src = _gcashQrData; img.style.display = 'block';
+        ph.style.display = 'none'; hint.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeGcashQr() {
+    _gcashQrData = null;
+    document.getElementById('gcashQrInput').value = '';
+    const img  = document.getElementById('gcashQrImg');
+    const ph   = document.getElementById('gcashQrPlaceholder');
+    const hint = document.getElementById('gcashQrHint');
+    img.src = ''; img.style.display = 'none';
+    ph.style.display = 'block'; hint.style.display = 'block';
+}
+
+function saveGcashSettings() {
+    const number      = document.getElementById('gcashNumberInput').value.trim();
+    const name        = document.getElementById('gcashNameInput').value.trim();
+    const paymentLink = document.getElementById('gcashPaymentLinkInput').value.trim();
+    if (!number) { admAlert('Please enter a GCash number.', 'warning'); return; }
+    if (!name)   { admAlert('Please enter the account name.', 'warning'); return; }
+
+    const cfg = { number, name };
+    if (paymentLink) cfg.paymentLink = paymentLink;
+    if (_gcashQrData) cfg.qrImage = _gcashQrData;
+
+    localStorage.setItem('kertGcash', JSON.stringify(cfg));
+    const linkInfo = paymentLink ? `\n🔗 ${paymentLink}` : '\n🔗 Link: not set (deep link used)';
+    admAlert(`GCash saved!\n📱 ${number}\n👤 ${name}${linkInfo}`, 'success', 'GCash Updated ✅');
+    document.getElementById('gcashPreviewNumber').textContent = number;
+    document.getElementById('gcashPreviewName').textContent   = name;
+}
+// ═══════════════════════════════════════════
+// ADMIN BROADCAST
+// ═══════════════════════════════════════════
+function adminBroadcast(key) {
+    // Writing to localStorage is enough — auth.html watcher will detect it
+}
+
+// Close edit modal on backdrop click / Escape
+document.getElementById('hairstyleEditModal').addEventListener('click', function(e) {
+    if (e.target === this) closeHairstyleEdit();
+});
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeHairstyleEdit();
+});
+</script>
