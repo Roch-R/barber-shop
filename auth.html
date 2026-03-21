@@ -2247,14 +2247,15 @@
 
         // Merge with admin overrides stored in localStorage
         function loadHairstyles() {
-            const saved = JSON.parse(KertDB.getItem('kertHairstyles')) || [];
-            // Merge defaults with overrides, skip deleted
+            // Safe: KertDB may not be ready yet, fall back to localStorage or empty
+            let raw = null;
+            try { raw = (typeof KertDB !== 'undefined') ? KertDB.getItem('kertHairstyles') : localStorage.getItem('kertHairstyles'); } catch(e) {}
+            const saved = raw ? JSON.parse(raw) : [];
             const merged = hairstylesDefault.map(def => {
                 const override = saved.find(s => s.id === def.id);
-                if (override && override.deleted) return null; // deleted by admin
+                if (override && override.deleted) return null;
                 return override ? { ...def, ...override } : def;
             }).filter(Boolean);
-            // Add custom entries (id >= 100) added by admin
             const customs = saved.filter(s => s.id >= 100 && !s.deleted);
             return [...merged, ...customs];
         }
@@ -2285,16 +2286,30 @@
             _useFirebase: false,
 
             async init() {
+                // Skip Firebase on local file://
+                if (window.location.protocol === 'file:') {
+                    this._useFirebase = false;
+                    this._loadFromLocal();
+                    this._ready = true;
+                    return;
+                }
+                // Try Firebase with strict timeouts
+                const _timeout = ms => new Promise((_, r) => setTimeout(() => r(new Error('timeout')), ms));
                 try {
                     if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
                     this._fb = firebase.database();
-                    // Test connection with a quick read
-                    await this._fb.ref('.info/connected').once('value');
+                    // Connection test — 3 seconds max
+                    await Promise.race([
+                        this._fb.ref('.info/connected').once('value'),
+                        _timeout(3000)
+                    ]);
+                    // Load all keys — 4 seconds max
+                    await Promise.race([this._loadAll(), _timeout(4000)]);
                     this._useFirebase = true;
-                    await this._loadAll();
                 } catch(e) {
-                    console.warn('[KertDB] Firebase failed, using localStorage:', e.message);
+                    console.warn('[KertDB] Using localStorage fallback:', e.message);
                     this._useFirebase = false;
+                    this._fb = null;
                     this._loadFromLocal();
                 }
                 this._ready = true;
@@ -2418,42 +2433,53 @@
 
         async function handleLogin(e) {
             e.preventDefault();
-            const email    = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            const errorDiv = document.getElementById('loginError');
-            const submitBtn = e.target.querySelector('button[type="submit"]');
+
+            const email     = (document.getElementById('loginEmail').value || '').trim().toLowerCase();
+            const password  = document.getElementById('loginPassword').value || '';
+            const errorDiv  = document.getElementById('loginError');
+            const submitBtn = e.target ? e.target.querySelector('button[type="submit"]') : null;
+
             if (submitBtn) { submitBtn.textContent = 'Checking...'; submitBtn.disabled = true; }
 
-            // Always pull latest users & bannedUsers from Firebase before checking
-            if (KertDB._useFirebase && KertDB._fb) {
-                const [uSnap, bSnap] = await Promise.all([
-                    KertDB._fb.ref('users').once('value'),
-                    KertDB._fb.ref('bannedUsers').once('value')
-                ]);
-                users       = uSnap.val()  || [];
-                bannedUsers = bSnap.val()  || [];
-                KertDB._cache['users']       = users;
-                KertDB._cache['bannedUsers'] = bannedUsers;
-                // Also pull bookings for display
-                const boSnap = await KertDB._fb.ref('bookings').once('value');
-                bookings = boSnap.val() || [];
-                KertDB._cache['bookings'] = bookings;
-            }
+            try {
+                // Get freshest users & bannedUsers — try Firebase (1.5s max) then cache
+                let allUsers = Array.isArray(users) ? [...users] : Object.values(users || {});
+                let allBanned = Array.isArray(bannedUsers) ? [...bannedUsers] : Object.values(bannedUsers || {});
+
+                if (KertDB._useFirebase && KertDB._fb) {
+                    try {
+                        const t = ms => new Promise((_, r) => setTimeout(() => r(new Error('t')), ms));
+                        const [us, bs] = await Promise.race([
+                            Promise.all([
+                                KertDB._fb.ref('users').once('value'),
+                                KertDB._fb.ref('bannedUsers').once('value')
+                            ]),
+                            t(1500).then(() => { throw new Error('timeout'); })
+                        ]);
+                        const uv = us.val(), bv = bs.val();
+                        if (uv) allUsers  = Array.isArray(uv) ? uv : Object.values(uv);
+                        if (bv) allBanned = Array.isArray(bv) ? bv : Object.values(bv);
+                        KertDB._cache['users'] = allUsers;
+                        KertDB._cache['bannedUsers'] = allBanned;
+                    } catch(fe) { /* use cache */ }
+                }
+
+                users = allUsers;
+                bannedUsers = allBanned;
+
+            } catch(fe2) { /* use existing globals */ }
 
             if (submitBtn) { submitBtn.textContent = 'Login'; submitBtn.disabled = false; }
 
-            // Make sure users is array not object (Firebase stores arrays as objects)
-            if (!Array.isArray(users)) users = Object.values(users);
-            if (!Array.isArray(bannedUsers)) bannedUsers = Object.values(bannedUsers);
-
-            const isBanned = bannedUsers.some(bu => bu.email === email);
+            // ── Ban check ────────────────────────────────
+            const isBanned = bannedUsers.some(b => b && b.email && b.email.toLowerCase() === email);
             if (isBanned) {
-                errorDiv.textContent = '🚫 Your account has been banned. Contact support.';
-                errorDiv.classList.add('show');
-                return;
+                errorDiv.textContent = '\ud83d\udeab Your account has been banned. Contact support.';
+                errorDiv.classList.add('show'); return;
             }
 
-            const user = users.find(u => u.email === email && u.password === password);
+            // ── Credential check ─────────────────────────
+            const user = users.find(u => u && u.email && u.email.toLowerCase() === email && u.password === password);
             if (user) {
                 currentUser = user;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
@@ -2464,65 +2490,129 @@
                 updateBookingsDisplay();
                 renderHairstyles('all');
             } else {
-                errorDiv.textContent = '❌ Invalid email or password';
+                errorDiv.textContent = '\u274c Invalid email or password';
                 errorDiv.classList.add('show');
             }
         }
 
-        function handleRegister(e) {
+        
+        async function handleRegister(e) {
             e.preventDefault();
-            const name = document.getElementById('registerName').value.trim();
-            const email = document.getElementById('registerEmail').value.trim();
-            let phoneInput = document.getElementById('registerPhone').value.trim();
-            const password = document.getElementById('registerPassword').value;
-            const confirm = document.getElementById('registerConfirm').value;
-            const errorDiv = document.getElementById('registerError');
 
-            let phone = phoneInput.replace(/\D/g, '').trim();
-            
-            if (!phone || phone.length !== 11) {
-                errorDiv.textContent = '❌ Phone number must be exactly 11 digits (e.g., 09123456789)';
-                errorDiv.classList.add('show');
-                return;
-            }
+            const errorDiv  = document.getElementById('registerError');
+            const submitBtn = e.target ? e.target.querySelector('button[type="submit"]') : null;
 
-            if (password !== confirm) {
-                errorDiv.textContent = '❌ Passwords do not match';
-                errorDiv.classList.add('show');
-                return;
-            }
-
-            // Ensure users is array (Firebase may return object)
-            if (!Array.isArray(users)) users = Object.values(users);
-            if (users.find(u => u.email === email)) {
-                errorDiv.textContent = '❌ Email already registered';
-                errorDiv.classList.add('show');
-                return;
-            }
-
-            if (password.length < 6) {
-                errorDiv.textContent = '❌ Password must be at least 6 characters';
-                errorDiv.classList.add('show');
-                return;
-            }
-
-            const newUser = {
-                id: Date.now(),
-                name,
-                email,
-                phone,
-                password,
-                createdAt: new Date().toLocaleString()
+            // Helper to reset button
+            const resetBtn = () => {
+                if (submitBtn) { submitBtn.textContent = 'Create Account'; submitBtn.disabled = false; }
             };
 
-            users.push(newUser);
-            KertDB.setItem('users', JSON.stringify(users));
-            
-            errorDiv.classList.remove('show');
-            alert('✅ Account created! You can now login.');
-            switchToLogin();
+            try {
+                const name     = (document.getElementById('registerName').value || '').trim();
+                const email    = (document.getElementById('registerEmail').value || '').trim().toLowerCase();
+                const phoneRaw = (document.getElementById('registerPhone').value || '').trim();
+                const password = document.getElementById('registerPassword').value || '';
+                const confirm  = document.getElementById('registerConfirm').value  || '';
+                const phone    = phoneRaw.replace(/\D/g, '');
+
+                errorDiv.classList.remove('show');
+
+                // ── Validation (all sync, instant) ──────────
+                if (!name) {
+                    errorDiv.textContent = '\u274c Please enter your full name';
+                    errorDiv.classList.add('show'); return;
+                }
+                if (!phone || phone.length !== 11) {
+                    errorDiv.textContent = '\u274c Phone must be exactly 11 digits (e.g. 09123456789)';
+                    errorDiv.classList.add('show'); return;
+                }
+                if (password.length < 6) {
+                    errorDiv.textContent = '\u274c Password must be at least 6 characters';
+                    errorDiv.classList.add('show'); return;
+                }
+                if (password !== confirm) {
+                    errorDiv.textContent = '\u274c Passwords do not match';
+                    errorDiv.classList.add('show'); return;
+                }
+
+                // ── Show loading ─────────────────────────────
+                if (submitBtn) { submitBtn.textContent = 'Creating...'; submitBtn.disabled = true; }
+
+                // ── Read users from every possible source ────
+                // Priority: Firebase cache > localStorage > empty
+                let allUsers = [];
+
+                // 1. Try KertDB cache (populated during init)
+                try {
+                    const cached = KertDB._cache['users'];
+                    if (cached) {
+                        allUsers = Array.isArray(cached) ? cached : Object.values(cached);
+                    }
+                } catch(e1) {}
+
+                // 2. Fallback: raw localStorage
+                if (allUsers.length === 0) {
+                    try {
+                        const raw = localStorage.getItem('users');
+                        if (raw) {
+                            const p = JSON.parse(raw);
+                            allUsers = Array.isArray(p) ? p : Object.values(p);
+                        }
+                    } catch(e2) {}
+                }
+
+                // 3. Try a quick Firebase fetch (1.5s max) — non-blocking, only if ready
+                if (KertDB._useFirebase && KertDB._fb) {
+                    try {
+                        const snap = await Promise.race([
+                            KertDB._fb.ref('users').once('value'),
+                            new Promise((_, r) => setTimeout(() => r(new Error('t')), 1500))
+                        ]);
+                        const v = snap.val();
+                        if (v) {
+                            const fb = Array.isArray(v) ? v : Object.values(v);
+                            if (fb.length >= allUsers.length) allUsers = fb;
+                        }
+                    } catch(e3) { /* use cached data */ }
+                }
+
+                // Sync global users var
+                users = allUsers;
+                KertDB._cache['users'] = users;
+
+                resetBtn();
+
+                // ── Check duplicate email ────────────────────
+                const emailTaken = users.some(u => u && u.email && u.email.toLowerCase() === email);
+                if (emailTaken) {
+                    errorDiv.textContent = '\u274c Email already registered. Please login instead.';
+                    errorDiv.classList.add('show'); return;
+                }
+
+                // ── Create & save user ───────────────────────
+                const newUser = {
+                    id: Date.now(),
+                    name, email, phone, password,
+                    createdAt: new Date().toLocaleString()
+                };
+                users.push(newUser);
+
+                // Save everywhere
+                try { localStorage.setItem('users', JSON.stringify(users)); } catch(e4) {}
+                try { KertDB.setItem('users', JSON.stringify(users)); } catch(e5) {}
+
+                alert('\u2705 Account created! You can now login.');
+                switchToLogin();
+
+            } catch(err) {
+                console.error('[Register]', err);
+                resetBtn();
+                errorDiv.textContent = '\u274c Something went wrong. Please try again.';
+                errorDiv.classList.add('show');
+            }
         }
 
+        
         function showMainSite() {
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('registerPage').classList.add('hidden');
@@ -2545,7 +2635,6 @@
             if (id === 'booking') {
                 generateTimeSlots();
                 setupVacationDatePicker();
-                populateServiceDropdown(); // ← refresh dropdown when opening booking
                 document.getElementById('priceDisplay').textContent = '₱0';
                 document.getElementById('serviceType').value = '';
                 // Reset service picker trigger label
@@ -2604,102 +2693,6 @@
                 setTimeout(() => spmConfirmService(h.name, h.price, h.emoji), 50);
             }
         }
-
-        // ============ SERVICE PICKER FUNCTIONS ============
-        function openServicePicker() {
-            // Update counts on category cards
-            const cats = ['regular haircut', 'haircut and shave', 'home service'];
-            const ids  = ['countRegular', 'countShave', 'countHome'];
-            cats.forEach((cat, i) => {
-                const n = hairstylesData.filter(h => h.category === cat).length;
-                const el = document.getElementById(ids[i]);
-                if (el) el.textContent = n + (n === 1 ? ' style' : ' styles');
-            });
-
-            // Reset to step 1
-            spmShowStep1();
-
-            const modal = document.getElementById('servicePickerModal');
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeServicePicker() {
-            document.getElementById('servicePickerModal').classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
-
-        function spmShowStep1() {
-            document.getElementById('spmStep1').style.display = 'grid';
-            document.getElementById('spmStep2').style.display = 'none';
-            document.getElementById('spmBackBtn').style.display = 'none';
-            document.getElementById('spmTitle').textContent = 'Choose a Category';
-            document.getElementById('spmBreadcrumb').innerHTML = '<span class="crumb-active">Category</span>';
-        }
-
-        function spmGoBack() {
-            spmShowStep1();
-        }
-
-        function spmSelectCategory(category) {
-            const services = hairstylesData.filter(h => h.category === category);
-            const catLabels = {
-                'regular haircut': 'Regular Haircut',
-                'haircut and shave': 'Haircut & Shave',
-                'home service': 'Home Service'
-            };
-            const label = catLabels[category] || category;
-
-            // Build step 2 grid
-            const grid = document.getElementById('spmStep2');
-            const currentVal = document.getElementById('serviceType').value;
-            grid.innerHTML = services.map(s => `
-                <div class="spm-service-card ${currentVal === s.name ? 'selected-service' : ''}"
-                     onclick="spmPickService('${s.name}', ${s.price})">
-                    <span class="spm-service-emoji">${s.emoji}</span>
-                    <div class="spm-service-info">
-                        <div class="spm-service-name">${s.name}</div>
-                        <div class="spm-service-desc">${s.description}</div>
-                    </div>
-                    <div class="spm-service-price">₱${s.price}</div>
-                </div>
-            `).join('');
-
-            document.getElementById('spmStep1').style.display = 'none';
-            grid.style.display = 'grid';
-            document.getElementById('spmBackBtn').style.display = 'flex';
-            document.getElementById('spmTitle').textContent = label;
-            document.getElementById('spmBreadcrumb').innerHTML =
-                '<span onclick="spmShowStep1()" style="cursor:pointer;">Category</span>' +
-                ' › <span class="crumb-active">' + label + '</span>';
-        }
-
-        function spmPickService(name, price) {
-            // Store value
-            document.getElementById('serviceType').value = name;
-
-            // Update trigger button text
-            const h = hairstylesData.find(s => s.name === name);
-            const emoji = h ? h.emoji : '✂️';
-            document.getElementById('servicePickerLabel').textContent = emoji + ' ' + name + ' — ₱' + price.toLocaleString('en-PH');
-            document.getElementById('servicePickerTrigger').classList.add('selected');
-
-            // Update price display
-            document.getElementById('priceDisplay').textContent = '₱' + price.toLocaleString('en-PH');
-
-            // Highlight selection then close
-            document.querySelectorAll('.spm-service-card').forEach(c => c.classList.remove('selected-service'));
-            event.currentTarget.classList.add('selected-service');
-
-            setTimeout(closeServicePicker, 280);
-        }
-
-        // Close on backdrop click
-        document.addEventListener('click', function(e) {
-            const modal = document.getElementById('servicePickerModal');
-            if (modal && e.target === modal) closeServicePicker();
-        });
-        // ============ END SERVICE PICKER FUNCTIONS ============
 
         // ============ END HAIRSTYLES FUNCTIONS ============
 

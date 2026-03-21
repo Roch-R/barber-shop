@@ -795,13 +795,22 @@
     const KertDB = {
         _cache:{}, _fb:null, _ready:false, _useFirebase:false,
         async init() {
+            const isLocalFile = window.location.protocol === 'file:';
+            if (isLocalFile) {
+                console.log('[KertDB] Local file mode — using localStorage');
+                this._useFirebase = false;
+                KERT_DB_KEYS.forEach(k => { const v=localStorage.getItem(k); this._cache[k]=v?JSON.parse(v):null; });
+                this._ready = true;
+                return;
+            }
             try {
                 if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
                 this._fb = firebase.database();
-                await this._fb.ref('.info/connected').once('value');
+                const connTest = this._fb.ref('.info/connected').once('value');
+                await Promise.race([connTest, new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),4000))]);
                 this._useFirebase = true;
                 const promises = KERT_DB_KEYS.map(k => this._fb.ref(k).once('value').then(s => ({ key:k, val:s.val() })));
-                (await Promise.all(promises)).forEach(r => { this._cache[r.key] = r.val !== undefined ? r.val : null; });
+                await Promise.race([Promise.all(promises).then(rs=>rs.forEach(r=>{this._cache[r.key]=r.val!==undefined?r.val:null;})), new Promise((_,r)=>setTimeout(()=>r(new Error('load timeout')),5000))]);
             } catch(e) {
                 console.warn('[KertDB] Firebase failed:', e.message);
                 this._useFirebase = false;
