@@ -38,10 +38,10 @@
 
 ## Local Development
 ```
-# Open files directly
-index.html     # Admin dashboard
-auth.html      # User booking site  
-public-index.html # Public landing
+# Open files directly (updated 2026)
+index.html        # Admin dashboard - v2.1.0
+auth.html         # User booking site - v2.1.0  
+public-index.html # Public landing - v2.1.0
 ```
 
 ## Data Storage
