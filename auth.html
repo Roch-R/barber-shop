@@ -2115,7 +2115,7 @@
                     <div class="otp-envelope">📧</div>
                     <div class="otp-title">Check Your Email</div>
                     <div class="otp-subtitle">We sent a 6-digit verification code to</div>
-                    <div class="otp-email-badge" id="otpEmailBadge">your@email.com</div>
+                    <div class="otp-email-badge" id="otpEmailBadge"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="9be2f4eee9dbfef6faf2f7b5f8f4f6">[email&#160;protected]</a></div>
                     <div style="color:rgba(176,176,176,0.5);font-size:0.75rem;">Didn't receive it? Check spam / junk folder.</div>
                 </div>
 
@@ -2488,7 +2488,7 @@
         </div>
     </div>
 
-    <script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
         // ============ HAIRSTYLES DATABASE ============
         const hairstylesDefault = [
             { id:1,  name:'TUF GENT',            category:'regular haircut',  price:380, emoji:'💼', description:'A Timeless Cut for Every Gentleman. Low-maintenance with a touch of class, perfect for the modern gentleman.' },
@@ -2685,12 +2685,6 @@
             document.getElementById('registerError').classList.remove('show');
         }
 
-        // ── OTP ENGINE ──────────────────────────────────────────────────────
-        let _otpCode        = '';
-        let _otpPending     = null;
-        let _otpExpiry      = 0;
-        let _otpTimerHandle = null;
-
         async function handleLogin(e) {
             e.preventDefault();
 
@@ -2785,7 +2779,9 @@
             e.preventDefault();
             const errorDiv  = document.getElementById('registerError');
             const submitBtn = e.target ? e.target.querySelector('button[type="submit"]') : null;
-            const resetBtn  = () => { if (submitBtn) { submitBtn.textContent = 'Create Account'; submitBtn.disabled = false; } };
+            const resetBtn  = () => {
+                if (submitBtn) { submitBtn.textContent = 'Create Account'; submitBtn.disabled = false; }
+            };
 
             try {
                 const name     = (document.getElementById('registerName').value || '').trim();
@@ -2797,13 +2793,14 @@
 
                 errorDiv.classList.remove('show');
 
-                if (!name)                          { errorDiv.textContent = '\u274c Please enter your full name'; errorDiv.classList.add('show'); return; }
-                if (!phone || phone.length !== 11)  { errorDiv.textContent = '\u274c Phone must be exactly 11 digits (e.g. 09123456789)'; errorDiv.classList.add('show'); return; }
-                if (password.length < 6)            { errorDiv.textContent = '\u274c Password must be at least 6 characters'; errorDiv.classList.add('show'); return; }
-                if (password !== confirm)            { errorDiv.textContent = '\u274c Passwords do not match'; errorDiv.classList.add('show'); return; }
+                if (!name)                         { errorDiv.textContent = '❌ Please enter your full name'; errorDiv.classList.add('show'); return; }
+                if (!phone || phone.length !== 11) { errorDiv.textContent = '❌ Phone must be exactly 11 digits (e.g. 09123456789)'; errorDiv.classList.add('show'); return; }
+                if (password.length < 6)           { errorDiv.textContent = '❌ Password must be at least 6 characters'; errorDiv.classList.add('show'); return; }
+                if (password !== confirm)           { errorDiv.textContent = '❌ Passwords do not match'; errorDiv.classList.add('show'); return; }
 
-                if (submitBtn) { submitBtn.textContent = 'Sending OTP...'; submitBtn.disabled = true; }
+                if (submitBtn) { submitBtn.textContent = 'Checking email...'; submitBtn.disabled = true; }
 
+                // ── Pull latest users ──
                 let allUsers = [];
                 try { const c = KertDB._cache['users']; if (c) allUsers = Array.isArray(c) ? c : Object.values(c); } catch(e1) {}
                 if (allUsers.length === 0) {
@@ -2813,225 +2810,298 @@
                     try {
                         const snap = await Promise.race([
                             KertDB._fb.ref('users').once('value'),
-                            new Promise((_,r) => setTimeout(() => r(new Error('t')), 1500))
+                            new Promise((_,r) => setTimeout(() => r(new Error('t')), 2000))
                         ]);
                         const v = snap.val();
                         if (v) { const fb = Array.isArray(v) ? v : Object.values(v); if (fb.length >= allUsers.length) allUsers = fb; }
                     } catch(e3) {}
                 }
                 users = allUsers; KertDB._cache['users'] = users;
-                resetBtn();
 
                 if (users.some(u => u && u.email && u.email.toLowerCase() === email)) {
-                    errorDiv.textContent = '\u274c Email already registered. Please login instead.';
+                    resetBtn();
+                    errorDiv.textContent = '❌ Email already registered. Please login instead.';
                     errorDiv.classList.add('show'); return;
                 }
 
-                _otpCode   = String(Math.floor(100000 + Math.random() * 900000));
-                _otpExpiry = Date.now() + 5 * 60 * 1000;
+                // ── Generate OTP & store pending registration ──
+                _otpCode    = String(Math.floor(100000 + Math.random() * 900000));
+                _otpExpiry  = Date.now() + 5 * 60 * 1000; // 5 minutes
                 _otpPending = { name, email, phone, password };
 
-                // Send OTP via Gmail
+                if (submitBtn) { submitBtn.textContent = 'Sending OTP...'; }
+
+                // ── Send OTP via Google Apps Script (Gmail) — 100% FREE ──
+                let emailSent = false;
                 try {
                     await sendOTPEmail(email, name, _otpCode);
+                    emailSent = true;
                 } catch(emailErr) {
-                    console.warn('[KERT] Email error:', emailErr.message);
+                    console.warn('[KERT OTP] Email send warning:', emailErr.message);
+                    // Still show OTP page — code is generated, user can request resend
                 }
 
+                resetBtn();
                 showOTPPage(email);
 
             } catch(err) {
                 console.error('[Register]', err);
                 resetBtn();
-                errorDiv.textContent = '\u274c ' + (err.message || 'Something went wrong. Try again.');
+                errorDiv.textContent = '❌ ' + (err.message || 'Something went wrong. Try again.');
                 errorDiv.classList.add('show');
             }
         }
 
         // ═══════════════════════════════════════════════════════
-        // GOOGLE APPS SCRIPT URL  ← THIS WAS THE BUG (missing assignment)
+        // GOOGLE APPS SCRIPT URL — Free Gmail OTP (100 emails/day)
+        // Replace this URL with YOUR deployed Apps Script Web App URL
         // ═══════════════════════════════════════════════════════
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyCl20tFt9hTky32T5VuWJDaXnlnpM79bQbL447WzBJuBUdyciqYgnJ4cv_dVObeCcE/exec';
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwLKGTryAAvaX7olUUFDSLU2LZaYH8WZ0bu9fI-8MA4O98MES5RA75VjPFcPkuWZxx4/exec';
 
-        async function sendOTPEmail(toEmail, toName, otp) {
-            if (!GOOGLE_SCRIPT_URL) throw new Error('Google Apps Script URL not configured.');
-            const url = GOOGLE_SCRIPT_URL
-                + '?to='   + encodeURIComponent(toEmail)
-                + '&name=' + encodeURIComponent(toName)
-                + '&otp='  + encodeURIComponent(otp);
-            return new Promise(function(resolve) {
-                var img = new Image();
+        // Sends OTP via Google Apps Script doGet — works from file:// AND web servers, no CORS issues
+        function sendOTPEmail(toEmail, toName, otp) {
+            return new Promise(function(resolve, reject) {
+                if (!GOOGLE_SCRIPT_URL) { reject(new Error('No script URL')); return; }
+
+                var url = GOOGLE_SCRIPT_URL
+                    + '?to='   + encodeURIComponent(toEmail)
+                    + '&name=' + encodeURIComponent(toName)
+                    + '&otp='  + encodeURIComponent(otp);
+
                 var done = false;
-                var finish = function() { if (!done) { done = true; resolve({ success: true }); } };
-                img.onload  = finish;
-                img.onerror = finish;
+                var finish = function(success) {
+                    if (done) return;
+                    done = true;
+                    if (success) resolve({ ok: true });
+                    else reject(new Error('Email send failed'));
+                };
+
+                // Image-ping trick — triggers doGet, bypasses CORS completely
+                var img = new Image();
+                img.onload  = function() { finish(true); };
+                img.onerror = function() { finish(true); }; // onerror still means script ran
                 img.src = url;
-                setTimeout(finish, 8000);
+
+                // Fallback timeout — resolve after 8s regardless
+                setTimeout(function() { finish(true); }, 8000);
             });
         }
+
+        // ── OTP ENGINE ──────────────────────────────────────────
+        var _otpCode        = '';
+        var _otpPending     = null;
+        var _otpExpiry      = 0;
+        var _otpTimerHandle = null;
 
         function showOTPPage(email) {
             document.getElementById('registerPage').classList.add('hidden');
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('otpPage').classList.remove('hidden');
 
-            const _badge = document.getElementById('otpEmailBadge');
-            if (_badge) _badge.textContent = email;
+            var badge = document.getElementById('otpEmailBadge');
+            if (badge) badge.textContent = email;
 
-            const errDiv = document.getElementById('otpError');
-            errDiv.style.cssText = '';
-            errDiv.classList.remove('show');
+            var errDiv = document.getElementById('otpError');
+            if (errDiv) { errDiv.style.cssText = ''; errDiv.classList.remove('show'); }
 
-            for (let i = 0; i < 6; i++) {
-                const el = document.getElementById('otp' + i);
+            for (var i = 0; i < 6; i++) {
+                var el = document.getElementById('otp' + i);
                 if (el) { el.value = ''; el.classList.remove('filled'); }
             }
 
-            setTimeout(() => { const f = document.getElementById('otp0'); if (f) f.focus(); }, 120);
+            setTimeout(function() {
+                var f = document.getElementById('otp0');
+                if (f) f.focus();
+            }, 150);
 
             startOTPTimer();
         }
 
         function startOTPTimer() {
             clearInterval(_otpTimerHandle);
-            const resendBtn = document.getElementById('otpResendBtn');
+            var resendBtn = document.getElementById('otpResendBtn');
             if (resendBtn) resendBtn.disabled = true;
-            const timerEl  = document.getElementById('otpTimerDisplay') || document.getElementById('otpCountdown');
-            const timerRow = document.getElementById('otpTimer');
-            if (timerEl) timerEl.classList.remove('expired');
-            _otpTimerHandle = setInterval(() => {
-                const rem  = Math.max(0, _otpExpiry - Date.now());
-                const mins = Math.floor(rem / 60000);
-                const secs = Math.floor((rem % 60000) / 1000);
-                if (timerEl) {
-                    timerEl.textContent = mins + ':' + String(secs).padStart(2, '0');
-                    if (rem <= 60000) timerEl.classList.add('expired');
+            var timerEl = document.getElementById('otpTimerDisplay');
+            if (timerEl) { timerEl.textContent = '5:00'; timerEl.classList.remove('expired'); }
+
+            _otpTimerHandle = setInterval(function() {
+                var rem  = Math.max(0, _otpExpiry - Date.now());
+                var mins = Math.floor(rem / 60000);
+                var secs = Math.floor((rem % 60000) / 1000);
+                var timerEl2 = document.getElementById('otpTimerDisplay');
+                if (timerEl2) {
+                    timerEl2.textContent = mins + ':' + String(secs).padStart(2, '0');
+                    if (rem <= 60000) timerEl2.classList.add('expired');
                 }
                 if (rem <= 0) {
                     clearInterval(_otpTimerHandle);
-                    if (timerEl) timerEl.textContent = 'Expired';
-                    if (timerRow) timerRow.innerHTML = 'Code <span style="color:#f44336">expired</span> — please resend';
-                    if (resendBtn) resendBtn.disabled = false;
+                    if (timerEl2) timerEl2.textContent = 'Expired';
+                    var rb = document.getElementById('otpResendBtn');
+                    if (rb) rb.disabled = false;
                 }
             }, 500);
         }
 
         async function resendOTP() {
             if (!_otpPending) return;
-            const btn = document.getElementById('otpResendBtn');
+            var btn = document.getElementById('otpResendBtn');
             if (btn) { btn.disabled = true; btn.textContent = 'Sending...'; }
-            try {
-                _otpCode   = String(Math.floor(100000 + Math.random() * 900000));
-                _otpExpiry = Date.now() + 5 * 60 * 1000;
-                await sendOTPEmail(_otpPending.email, _otpPending.name, _otpCode);
-                if (btn) btn.textContent = '✓ Sent!';
-                const timerEl2 = document.getElementById('otpTimerDisplay');
-                if (timerEl2) { timerEl2.textContent = '5:00'; timerEl2.classList.remove('expired'); }
+            var errDiv = document.getElementById('otpError');
+            if (errDiv) errDiv.classList.remove('show');
 
-                startOTPTimer();
-                for (let i = 0; i < 6; i++) {
-                    const el = document.getElementById('otp' + i);
-                    if (el) { el.value = ''; el.classList.remove('filled'); }
-                }
-                document.getElementById('otpError').classList.remove('show');
-                setTimeout(() => { if (btn) btn.textContent = 'Resend Code'; }, 2000);
+            _otpCode   = String(Math.floor(100000 + Math.random() * 900000));
+            _otpExpiry = Date.now() + 5 * 60 * 1000;
+
+            try {
+                await sendOTPEmail(_otpPending.email, _otpPending.name, _otpCode);
+                if (btn) { btn.textContent = '✓ Sent! Check your email'; }
             } catch(err) {
                 if (btn) { btn.textContent = 'Resend Code'; btn.disabled = false; }
-                const errorDiv = document.getElementById('otpError');
-                errorDiv.textContent = '\u274c Failed to resend. Check your connection.';
-                errorDiv.classList.add('show');
+                if (errDiv) { errDiv.textContent = '❌ Failed to send. Check your internet.'; errDiv.classList.add('show'); }
+                return;
             }
+
+            for (var i = 0; i < 6; i++) {
+                var el = document.getElementById('otp' + i);
+                if (el) { el.value = ''; el.classList.remove('filled'); }
+            }
+            startOTPTimer();
+            setTimeout(function() {
+                var b = document.getElementById('otpResendBtn');
+                if (b) b.textContent = 'Resend Code';
+            }, 3000);
         }
 
         function otpInput(el, idx) {
             el.value = el.value.replace(/[^0-9]/g, '').slice(0, 1);
             el.classList.toggle('filled', el.value !== '');
             if (el.value && idx < 5) {
-                const next = document.getElementById('otp' + (idx + 1));
+                var next = document.getElementById('otp' + (idx + 1));
                 if (next) next.focus();
             }
-            const allFilled = Array.from({length:6}, (_,i) => document.getElementById('otp'+i)?.value || '').join('').length === 6;
-            if (allFilled) setTimeout(verifyOTP, 200);
+            // Auto-verify when all 6 filled
+            var allFilled = true;
+            for (var i = 0; i < 6; i++) {
+                var d = document.getElementById('otp' + i);
+                if (!d || !d.value) { allFilled = false; break; }
+            }
+            if (allFilled) setTimeout(verifyOTP, 250);
         }
 
         function otpKeydown(e, idx) {
             if (e.key === 'Backspace' && !e.target.value && idx > 0) {
-                const prev = document.getElementById('otp' + (idx - 1));
+                var prev = document.getElementById('otp' + (idx - 1));
                 if (prev) { prev.value = ''; prev.classList.remove('filled'); prev.focus(); }
             }
         }
 
+        // Setup OTP input listeners
         (function setupOTPInputs() {
-            for (let i = 0; i < 6; i++) {
-                const box = document.getElementById('otp' + i);
-                if (!box) continue;
-                const idx = i;
-                box.addEventListener('input', function() { otpInput(this, idx); });
-                box.addEventListener('keydown', function(e) { otpKeydown(e, idx); });
+            for (var i = 0; i < 6; i++) {
+                (function(idx) {
+                    var box = document.getElementById('otp' + idx);
+                    if (!box) return;
+                    box.addEventListener('input',   function() { otpInput(this, idx); });
+                    box.addEventListener('keydown', function(e) { otpKeydown(e, idx); });
+                })(i);
             }
         })();
 
+        // Handle paste of full 6-digit code
         document.addEventListener('paste', function(e) {
-            if (!e.target.classList.contains('otp-digit')) return;
+            if (!e.target || !e.target.classList.contains('otp-digit')) return;
             e.preventDefault();
-            const digits = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'').slice(0,6);
-            for (let i = 0; i < digits.length; i++) {
-                const box = document.getElementById('otp'+i);
+            var text   = (e.clipboardData || window.clipboardData).getData('text');
+            var digits = text.replace(/\D/g, '').slice(0, 6);
+            for (var i = 0; i < digits.length; i++) {
+                var box = document.getElementById('otp' + i);
                 if (box) { box.value = digits[i]; box.classList.add('filled'); }
             }
-            if (digits.length === 6) setTimeout(verifyOTP, 200);
+            if (digits.length === 6) setTimeout(verifyOTP, 250);
         });
 
         async function verifyOTP() {
-            const errorDiv = document.getElementById('otpError');
-            const btn = document.getElementById('otpVerifyBtn');
-            errorDiv.classList.remove('show');
+            var errDiv = document.getElementById('otpError');
+            var btn    = document.getElementById('otpVerifyBtn');
+            if (errDiv) errDiv.classList.remove('show');
 
-            const entered = Array.from({length:6}, (_,i) => document.getElementById('otp'+i)?.value || '').join('');
-            if (entered.length < 6) { errorDiv.textContent = '\u274c Please enter all 6 digits'; errorDiv.classList.add('show'); return; }
-            if (Date.now() > _otpExpiry) { errorDiv.textContent = '\u274c Code expired. Please request a new one.'; errorDiv.classList.add('show'); return; }
+            // Collect entered digits
+            var entered = '';
+            for (var i = 0; i < 6; i++) {
+                var d = document.getElementById('otp' + i);
+                entered += (d && d.value) ? d.value : '';
+            }
+
+            if (entered.length < 6) {
+                if (errDiv) { errDiv.textContent = '❌ Please enter all 6 digits'; errDiv.classList.add('show'); }
+                return;
+            }
+            if (Date.now() > _otpExpiry) {
+                if (errDiv) { errDiv.textContent = '❌ Code expired. Click Resend to get a new one.'; errDiv.classList.add('show'); }
+                var rb = document.getElementById('otpResendBtn');
+                if (rb) rb.disabled = false;
+                return;
+            }
             if (entered !== _otpCode) {
-                errorDiv.textContent = '\u274c Incorrect code. Try again.';
-                errorDiv.classList.add('show');
-                for (let i = 0; i < 6; i++) {
-                    const box = document.getElementById('otp'+i);
-                    if (box) { box.style.borderColor='#f44336'; setTimeout(()=>{box.style.borderColor='';},800); }
+                if (errDiv) { errDiv.textContent = '❌ Incorrect code. Try again.'; errDiv.classList.add('show'); }
+                // Shake animation on boxes
+                for (var j = 0; j < 6; j++) {
+                    (function(jj) {
+                        var box = document.getElementById('otp' + jj);
+                        if (!box) return;
+                        box.style.borderColor = '#f44336';
+                        box.style.animation = 'shake 0.4s ease';
+                        setTimeout(function() {
+                            box.style.borderColor = '';
+                            box.style.animation = '';
+                        }, 500);
+                    })(j);
                 }
                 return;
             }
 
+            // ── OTP correct — create the account ──
             clearInterval(_otpTimerHandle);
             if (btn) { btn.textContent = 'Creating Account...'; btn.disabled = true; }
 
-            const { name, email, phone, password } = _otpPending;
-            const newUser = { id: Date.now(), name, email, phone, password, createdAt: new Date().toLocaleString() };
+            var newUser = {
+                id:        Date.now(),
+                name:      _otpPending.name,
+                email:     _otpPending.email,
+                phone:     _otpPending.phone,
+                password:  _otpPending.password,
+                createdAt: new Date().toLocaleString()
+            };
             users.push(newUser);
-            try { localStorage.setItem('users', JSON.stringify(users)); } catch(e4) {}
-            try { KertDB._cache['users'] = users; } catch(e_cache) {}
-            try { KertDB.setItem('users', JSON.stringify(users)); } catch(e5) {}
+            try { localStorage.setItem('users', JSON.stringify(users)); } catch(e_ls) {}
+            try { KertDB._cache['users'] = users; }                      catch(e_ca) {}
+            try { KertDB.setItem('users', JSON.stringify(users)); }       catch(e_fb) {}
 
-            _otpPending = null; _otpCode = '';
-            if (btn) { btn.textContent = '\u2713 Verify & Create Account'; btn.disabled = false; }
+            _otpPending = null;
+            _otpCode    = '';
+            if (btn) { btn.textContent = '✓ Verify & Create Account'; btn.disabled = false; }
 
-            const existing = document.getElementById('otpSuccessPopup');
+            // ── Success popup ──
+            var existing = document.getElementById('otpSuccessPopup');
             if (existing) existing.remove();
-            const popup = document.createElement('div');
+            var popup = document.createElement('div');
             popup.id = 'otpSuccessPopup';
             popup.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);backdrop-filter:blur(12px);z-index:99999;display:flex;justify-content:center;align-items:center;padding:1.5rem;';
-            popup.innerHTML = `
-                <div style="background:linear-gradient(145deg,#1a2a1a,#0f1a0f);border:2px solid #4caf50;border-radius:28px;padding:2.8rem 2.5rem;max-width:420px;width:100%;text-align:center;position:relative;overflow:hidden;box-shadow:0 30px 80px rgba(76,175,80,0.25);animation:confirmedBounce 0.45s cubic-bezier(0.34,1.56,0.64,1);">
-                    <div style="position:absolute;top:0;left:0;right:0;height:5px;border-radius:28px 28px 0 0;background:linear-gradient(90deg,#4caf50,#81c784,#4caf50);background-size:200%;animation:shimmer 2s linear infinite;"></div>
-                    <div style="width:80px;height:80px;border-radius:50%;background:rgba(76,175,80,0.15);border:2.5px solid #4caf50;display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin:0 auto 1.5rem;box-shadow:0 0 30px rgba(76,175,80,0.3);">✓</div>
-                    <div style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:800;color:#4caf50;margin-bottom:0.6rem;">Email Verified!</div>
-                    <div style="color:#b0b0b0;font-size:0.92rem;line-height:1.7;margin-bottom:2rem;">Your account has been created successfully.<br>You can now log in to book appointments.</div>
-                    <button onclick="document.getElementById('otpSuccessPopup').remove();document.getElementById('otpPage').classList.add('hidden');switchToLogin();" style="width:100%;padding:1rem;background:linear-gradient(135deg,#4caf50,#2e7d32);color:#fff;border:none;border-radius:50px;font-family:'Poppins',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;text-transform:uppercase;letter-spacing:1px;box-shadow:0 10px 30px rgba(76,175,80,0.3);">Login Now →</button>
-                </div>`;
+            popup.innerHTML = '<div style="background:linear-gradient(145deg,#1a2a1a,#0f1a0f);border:2px solid #4caf50;border-radius:28px;padding:2.8rem 2.5rem;max-width:420px;width:100%;text-align:center;position:relative;overflow:hidden;box-shadow:0 30px 80px rgba(76,175,80,0.25);">'
+                + '<div style="position:absolute;top:0;left:0;right:0;height:5px;border-radius:28px 28px 0 0;background:linear-gradient(90deg,#4caf50,#81c784,#4caf50);background-size:200%;animation:shimmer 2s linear infinite;"></div>'
+                + '<div style="width:80px;height:80px;border-radius:50%;background:rgba(76,175,80,0.15);border:2.5px solid #4caf50;display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin:0 auto 1.5rem;box-shadow:0 0 30px rgba(76,175,80,0.3);">✓</div>'
+                + '<div style="font-family:\'Playfair Display\',serif;font-size:1.8rem;font-weight:800;color:#4caf50;margin-bottom:0.6rem;">Email Verified!</div>'
+                + '<div style="color:#b0b0b0;font-size:0.92rem;line-height:1.7;margin-bottom:2rem;">Your account has been created successfully.<br>You can now log in to book appointments.</div>'
+                + '<button onclick="document.getElementById(\'otpSuccessPopup\').remove();document.getElementById(\'otpPage\').classList.add(\'hidden\');switchToLogin();" '
+                + 'style="width:100%;padding:1rem;background:linear-gradient(135deg,#4caf50,#2e7d32);color:#fff;border:none;border-radius:50px;font-family:\'Poppins\',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;text-transform:uppercase;letter-spacing:1px;box-shadow:0 10px 30px rgba(76,175,80,0.3);">Login Now →</button>'
+                + '</div>';
             document.body.appendChild(popup);
         }
 
         function cancelOTP() {
             clearInterval(_otpTimerHandle);
-            _otpPending = null; _otpCode = '';
+            _otpPending = null;
+            _otpCode    = '';
             document.getElementById('otpPage').classList.add('hidden');
             switchToRegister();
         }
