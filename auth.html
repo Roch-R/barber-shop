@@ -1660,94 +1660,6 @@
         }
         /* ============ END SERVICE PICKER ============ */
 
-        /* ============ OTP VERIFICATION SCREEN ============ */
-        #otpPage .auth-box {
-            max-width: 420px;
-        }
-        .otp-icon {
-            font-size: 3.5rem;
-            text-align: center;
-            margin-bottom: 1rem;
-            display: block;
-            animation: float 2s ease-in-out infinite;
-        }
-        .otp-email-hint {
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 0.88rem;
-            margin-bottom: 1.5rem;
-            line-height: 1.6;
-        }
-        .otp-email-hint strong {
-            color: var(--accent);
-        }
-        .otp-inputs {
-            display: flex;
-            gap: 0.6rem;
-            justify-content: center;
-            margin-bottom: 1.5rem;
-        }
-        .otp-digit {
-            width: 48px;
-            height: 60px;
-            text-align: center;
-            font-size: 1.6rem;
-            font-weight: 800;
-            background: rgba(255,255,255,0.06);
-            border: 2px solid rgba(255,215,0,0.25);
-            border-radius: 12px;
-            color: var(--accent);
-            font-family: 'Playfair Display', serif;
-            transition: all 0.3s ease;
-            caret-color: var(--accent);
-            -webkit-appearance: none;
-            appearance: none;
-        }
-        .otp-digit:focus {
-            outline: none;
-            border-color: var(--accent);
-            background: rgba(255,215,0,0.08);
-            box-shadow: 0 0 15px rgba(255,215,0,0.15);
-            transform: scale(1.08);
-        }
-        .otp-digit.filled {
-            border-color: var(--accent);
-            background: rgba(255,215,0,0.1);
-        }
-        .otp-timer {
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            margin-bottom: 1rem;
-        }
-        .otp-timer span {
-            color: var(--accent);
-            font-weight: 700;
-        }
-        .otp-timer.expired span {
-            color: #f44336;
-        }
-        .otp-resend-btn {
-            background: none;
-            border: none;
-            color: var(--accent);
-            cursor: pointer;
-            font-weight: 600;
-            font-family: 'Poppins', sans-serif;
-            font-size: 0.88rem;
-            display: block;
-            margin: 0 auto 1.5rem;
-            text-decoration: underline;
-            transition: color 0.3s;
-        }
-        .otp-resend-btn:disabled {
-            color: var(--text-secondary);
-            cursor: not-allowed;
-            text-decoration: none;
-        }
-        .otp-resend-btn:hover:not(:disabled) { color: var(--accent-dark); }
-        /* ============ END OTP ============ */
-
         /* ======================================================
            SPLIT-PANEL REGISTER LAYOUT
         ====================================================== */
@@ -2919,7 +2831,7 @@
                 _otpExpiry = Date.now() + 5 * 60 * 1000;
                 _otpPending = { name, email, phone, password };
 
-                // Send OTP via Gmail (works from file:// and server)
+                // Send OTP via Gmail
                 try {
                     await sendOTPEmail(email, name, _otpCode);
                 } catch(emailErr) {
@@ -2937,13 +2849,12 @@
         }
 
         // ═══════════════════════════════════════════════════════
-        // GOOGLE APPS SCRIPT URL — paste yours here
+        // GOOGLE APPS SCRIPT URL  ← THIS WAS THE BUG (missing assignment)
         // ═══════════════════════════════════════════════════════
-https://script.google.com/macros/s/AKfycbyCl20tFt9hTky32T5VuWJDaXnlnpM79bQbL447WzBJuBUdyciqYgnJ4cv_dVObeCcE/exec
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyCl20tFt9hTky32T5VuWJDaXnlnpM79bQbL447WzBJuBUdyciqYgnJ4cv_dVObeCcE/exec';
 
         async function sendOTPEmail(toEmail, toName, otp) {
             if (!GOOGLE_SCRIPT_URL) throw new Error('Google Apps Script URL not configured.');
-            // Image GET — works from file:// AND real servers (bypasses CORS completely)
             const url = GOOGLE_SCRIPT_URL
                 + '?to='   + encodeURIComponent(toEmail)
                 + '&name=' + encodeURIComponent(toName)
@@ -2953,9 +2864,9 @@ https://script.google.com/macros/s/AKfycbyCl20tFt9hTky32T5VuWJDaXnlnpM79bQbL447W
                 var done = false;
                 var finish = function() { if (!done) { done = true; resolve({ success: true }); } };
                 img.onload  = finish;
-                img.onerror = finish; // JSON response = onerror fires = email was still sent
+                img.onerror = finish;
                 img.src = url;
-                setTimeout(finish, 8000); // safety timeout
+                setTimeout(finish, 8000);
             });
         }
 
