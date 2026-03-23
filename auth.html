@@ -1660,94 +1660,6 @@
         }
         /* ============ END SERVICE PICKER ============ */
 
-        /* ============ OTP VERIFICATION SCREEN ============ */
-        #otpPage .auth-box {
-            max-width: 420px;
-        }
-        .otp-icon {
-            font-size: 3.5rem;
-            text-align: center;
-            margin-bottom: 1rem;
-            display: block;
-            animation: float 2s ease-in-out infinite;
-        }
-        .otp-email-hint {
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 0.88rem;
-            margin-bottom: 1.5rem;
-            line-height: 1.6;
-        }
-        .otp-email-hint strong {
-            color: var(--accent);
-        }
-        .otp-inputs {
-            display: flex;
-            gap: 0.6rem;
-            justify-content: center;
-            margin-bottom: 1.5rem;
-        }
-        .otp-digit {
-            width: 48px;
-            height: 60px;
-            text-align: center;
-            font-size: 1.6rem;
-            font-weight: 800;
-            background: rgba(255,255,255,0.06);
-            border: 2px solid rgba(255,215,0,0.25);
-            border-radius: 12px;
-            color: var(--accent);
-            font-family: 'Playfair Display', serif;
-            transition: all 0.3s ease;
-            caret-color: var(--accent);
-            -webkit-appearance: none;
-            appearance: none;
-        }
-        .otp-digit:focus {
-            outline: none;
-            border-color: var(--accent);
-            background: rgba(255,215,0,0.08);
-            box-shadow: 0 0 15px rgba(255,215,0,0.15);
-            transform: scale(1.08);
-        }
-        .otp-digit.filled {
-            border-color: var(--accent);
-            background: rgba(255,215,0,0.1);
-        }
-        .otp-timer {
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            margin-bottom: 1rem;
-        }
-        .otp-timer span {
-            color: var(--accent);
-            font-weight: 700;
-        }
-        .otp-timer.expired span {
-            color: #f44336;
-        }
-        .otp-resend-btn {
-            background: none;
-            border: none;
-            color: var(--accent);
-            cursor: pointer;
-            font-weight: 600;
-            font-family: 'Poppins', sans-serif;
-            font-size: 0.88rem;
-            display: block;
-            margin: 0 auto 1.5rem;
-            text-decoration: underline;
-            transition: color 0.3s;
-        }
-        .otp-resend-btn:disabled {
-            color: var(--text-secondary);
-            cursor: not-allowed;
-            text-decoration: none;
-        }
-        .otp-resend-btn:hover:not(:disabled) { color: var(--accent-dark); }
-        /* ============ END OTP ============ */
-
         /* ======================================================
            SPLIT-PANEL REGISTER LAYOUT
         ====================================================== */
@@ -2085,18 +1997,6 @@
             font-weight: 600;
         }
         .otp-back-link a:hover { color: var(--accent-dark); }
-        /* Success flash */
-        .otp-success-flash {
-            position: absolute;
-            inset: 0;
-            border-radius: 24px;
-            background: rgba(76,175,80,0.12);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: fadeIn 0.3s ease-out;
-            z-index: 10;
-        }
         @media (max-width: 520px) {
             .otp-digit { width: 44px; height: 56px; font-size: 1.5rem; border-radius: 10px; gap: 0.5rem; }
             .otp-inputs-row { gap: 0.5rem; }
@@ -2215,9 +2115,10 @@
                     <div class="otp-envelope">📧</div>
                     <div class="otp-title">Check Your Email</div>
                     <div class="otp-subtitle">We sent a 6-digit verification code to</div>
-                    <div class="otp-email-badge" id="otpEmailBadge"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5a23352f281a3f373b333674393537">[email&#160;protected]</a></div>
+                    <div class="otp-email-badge" id="otpEmailBadge">your@email.com</div>
                     <div style="color:rgba(176,176,176,0.5);font-size:0.75rem;">Didn't receive it? Check spam / junk folder.</div>
                 </div>
+
                 <div class="error-message" id="otpError"></div>
                 <div class="otp-inputs-row" id="otpInputsRow">
                     <input class="otp-digit" type="tel" inputmode="numeric" maxlength="1" id="otp0" autocomplete="one-time-code">
@@ -2329,9 +2230,7 @@
                         </div>
                         <div class="form-group">
                             <label>Service Type *</label>
-                            <!-- Hidden input stores value for form validation -->
                             <input type="hidden" id="serviceType">
-                            <!-- Visual trigger -->
                             <div id="servicePickerTrigger" onclick="openServicePicker()" class="service-picker-trigger">
                                 <span id="servicePickerLabel">✂️ Choose a service...</span>
                                 <span class="service-picker-arrow">›</span>
@@ -2450,8 +2349,7 @@
         </div>
     </div>
 
-
-    <!-- ============ BOOKING CONFIRMED MODAL ============ -->
+    <!-- BOOKING CONFIRMED MODAL -->
     <div id="bookingConfirmedModal" class="booking-confirmed-modal">
         <div class="booking-confirmed-content">
             <div class="bc-confetti"></div>
@@ -2485,12 +2383,10 @@
             <button class="bc-btn" onclick="closeBookingConfirmed()">✓ Done</button>
         </div>
     </div>
-    <!-- ============ END BOOKING CONFIRMED MODAL ============ -->
 
-    <!-- ============ GCASH PAYMENT MODAL ============ -->
+    <!-- GCASH PAYMENT MODAL -->
     <div id="gcashModal" class="gcash-modal">
         <div class="gcash-box">
-            <!-- Header -->
             <div class="gcash-header">
                 <div class="gcash-logo-circle">📱</div>
                 <div class="gcash-header-text">
@@ -2499,15 +2395,11 @@
                 </div>
                 <button onclick="closeGcashModal()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:1.2rem;margin-left:auto;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">✕</button>
             </div>
-
             <div class="gcash-body">
-                <!-- Amount -->
                 <div class="gcash-amount-box">
                     <div class="gcash-amount-label">Amount to Send</div>
                     <div class="gcash-amount-value" id="gcashAmountDisplay">₱0</div>
                 </div>
-
-                <!-- AUTO REDIRECT COUNTDOWN (shows when payment link is set) -->
                 <div id="gcashRedirectBox" style="display:none;background:rgba(0,199,60,0.1);border:1.5px solid rgba(0,199,60,0.35);border-radius:12px;padding:1rem;margin-bottom:1rem;text-align:center;">
                     <div style="font-size:1.5rem;margin-bottom:0.4rem;">🚀</div>
                     <div style="color:#00c73c;font-weight:700;font-size:0.88rem;margin-bottom:0.3rem;">Redirecting to GCash in <span id="gcashCountdown">3</span>s...</div>
@@ -2516,8 +2408,6 @@
                         📲 Open GCash Now
                     </button>
                 </div>
-
-                <!-- QR Code -->
                 <div class="gcash-qr-area">
                     <div id="gcashQrDisplay">
                         <div class="gcash-qr-placeholder">
@@ -2527,8 +2417,6 @@
                     </div>
                     <div class="gcash-qr-label">Scan with GCash App</div>
                 </div>
-
-                <!-- Account Info -->
                 <div style="margin-bottom:0.5rem;">
                     <div class="gcash-info-row">
                         <span class="gcash-info-label">📱 GCash Number</span>
@@ -2553,22 +2441,17 @@
                         </span>
                     </div>
                 </div>
-
-                <!-- Note -->
                 <div class="gcash-note">
                     ⚠️ <strong>Important:</strong> After sending, your booking will be marked as <strong>Pending</strong>. The admin will confirm once payment is verified. Please keep your GCash receipt.
                 </div>
-
                 <button class="gcash-done-btn" onclick="closeGcashModal()">✓ I've Sent the Payment</button>
             </div>
         </div>
     </div>
-    <!-- ============ END GCASH PAYMENT MODAL ============ -->
 
-    <!-- ============ SERVICE PICKER MODAL ============ -->
+    <!-- SERVICE PICKER MODAL -->
     <div id="servicePickerModal" class="service-picker-modal">
         <div class="service-picker-content">
-            <!-- Header -->
             <div class="spm-header">
                 <div class="spm-header-left">
                     <button id="spmBackBtn" class="spm-back-btn" onclick="spmGoBack()" style="display:none;">‹</button>
@@ -2576,13 +2459,10 @@
                 </div>
                 <button class="spm-close" onclick="closeServicePicker()">✕</button>
             </div>
-            <!-- Breadcrumb -->
             <div class="spm-breadcrumb" id="spmBreadcrumb">
                 <span class="crumb-active">Category</span>
             </div>
-            <!-- Body -->
             <div class="spm-body">
-                <!-- Step 1: Categories -->
                 <div id="spmStep1" class="spm-categories">
                     <div class="spm-cat-card" onclick="spmSelectCategory('regular haircut')">
                         <span class="spm-cat-icon">✂️</span>
@@ -2603,154 +2483,33 @@
                         <span class="spm-cat-count" id="countHome">— styles</span>
                     </div>
                 </div>
-                <!-- Step 2: Services in chosen category -->
                 <div id="spmStep2" class="spm-services-grid" style="display:none;"></div>
             </div>
         </div>
     </div>
-    <!-- ============ END SERVICE PICKER MODAL ============ -->
 
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    <script>
         // ============ HAIRSTYLES DATABASE ============
-        // Default data — admin overrides are merged from localStorage
         const hairstylesDefault = [
-            // ── Regular Haircut ──────────────────────────────────────────
-            {
-                id: 1,
-                name: 'TUF GENT',
-                category: 'regular haircut',
-                price: 380,
-                emoji: '💼',
-                description: 'A Timeless Cut for Every Gentleman. Low-maintenance with a touch of class, perfect for the modern gentleman.'
-            },
-            {
-                id: 2,
-                name: 'TONY CUT',
-                category: 'regular haircut',
-                price: 380,
-                emoji: '✨',
-                description: 'Low-key High Impact. A modern remix of the classic military cut offering a clean, confident look without the fuss.'
-            },
-            {
-                id: 3,
-                name: 'THE BANKER CUT',
-                category: 'regular haircut',
-                price: 380,
-                emoji: '🏦',
-                description: 'Sharp Lines, Sharper Mind. Classic haircut following contours of your head for a clean, confident professional look.'
-            },
-            {
-                id: 4,
-                name: 'BASTARD CUT',
-                category: 'regular haircut',
-                price: 380,
-                emoji: '🎭',
-                description: 'Rebellious Charm. Combining iconic era with American Golden Age style for a clean, confident look with refined edge.'
-            },
-            {
-                id: 5,
-                name: 'FADE',
-                category: 'regular haircut',
-                price: 300,
-                emoji: '⚡',
-                description: 'Sharp and Clean. Smooth transition from short to shorter sides, perfect for precision and style in one cut.'
-            },
-            {
-                id: 6,
-                name: 'UNDERCUT',
-                category: 'regular haircut',
-                price: 300,
-                emoji: '🎯',
-                description: 'Bold Definition. Classic style with dramatic contrast, making a statement with clean, sharp lines and modern appeal.'
-            },
-            {
-                id: 7,
-                name: 'CREW CUT',
-                category: 'regular haircut',
-                price: 280,
-                emoji: '🎖️',
-                description: 'Classic & Timeless. Short, clean, and professional - the ultimate versatile haircut for all occasions.'
-            },
-            // ── Haircut & Shave ──────────────────────────────────────────
-            {
-                id: 8,
-                name: 'HOOLIGAN CUT',
-                category: 'haircut and shave',
-                price: 380,
-                emoji: '🎪',
-                description: 'Versatile Canvas. Classic cut with a clean straight-razor shave — confidence in every detail.'
-            },
-            {
-                id: 9,
-                name: 'BUGSY CUT',
-                category: 'haircut and shave',
-                price: 380,
-                emoji: '🌟',
-                description: 'Outlined Edge, Effortless Style. Slicked-back cut paired with a precision shave for a polished finish.'
-            },
-            {
-                id: 10,
-                name: 'SLICK BACK',
-                category: 'haircut and shave',
-                price: 380,
-                emoji: '💎',
-                description: 'Sophisticated Elegance. Sleek cut plus full straight-razor shave — perfect for formal occasions.'
-            },
-            {
-                id: 11,
-                name: 'PROFESSIONAL',
-                category: 'haircut and shave',
-                price: 350,
-                emoji: '💼',
-                description: 'Business Ready. Clean executive cut with a smooth shave — the complete grooming package for the workplace.'
-            },
-            {
-                id: 12,
-                name: 'TEXTURED TOP',
-                category: 'haircut and shave',
-                price: 350,
-                emoji: '🌊',
-                description: 'Modern Texture. Layered textured cut on top paired with a clean fade and precision shave on the sides.'
-            },
-            // ── Home Service ─────────────────────────────────────────────
-            {
-                id: 13,
-                name: 'HOME REGULAR CUT',
-                category: 'home service',
-                price: 450,
-                emoji: '🏠',
-                description: 'Classic haircut delivered to your doorstep. All tools and products brought to you — no travel required.'
-            },
-            {
-                id: 14,
-                name: 'HOME FADE',
-                category: 'home service',
-                price: 500,
-                emoji: '🚗',
-                description: 'Premium fade service at home. Our barber comes to you with full equipment for a sharp fade finish.'
-            },
-            {
-                id: 15,
-                name: 'HOME HAIRCUT + SHAVE',
-                category: 'home service',
-                price: 550,
-                emoji: '🛋️',
-                description: 'Complete grooming at your own comfort zone. Haircut and straight-razor shave, delivered at home.'
-            },
-            {
-                id: 16,
-                name: 'HOME PREMIUM PACKAGE',
-                category: 'home service',
-                price: 650,
-                emoji: '👑',
-                description: 'The full VIP experience at home. Cut, shave, and styling with premium products — all at your door.'
-            }
+            { id:1,  name:'TUF GENT',            category:'regular haircut',  price:380, emoji:'💼', description:'A Timeless Cut for Every Gentleman. Low-maintenance with a touch of class, perfect for the modern gentleman.' },
+            { id:2,  name:'TONY CUT',            category:'regular haircut',  price:380, emoji:'✨', description:'Low-key High Impact. A modern remix of the classic military cut offering a clean, confident look without the fuss.' },
+            { id:3,  name:'THE BANKER CUT',      category:'regular haircut',  price:380, emoji:'🏦', description:'Sharp Lines, Sharper Mind. Classic haircut following contours of your head for a clean, confident professional look.' },
+            { id:4,  name:'BASTARD CUT',         category:'regular haircut',  price:380, emoji:'🎭', description:'Rebellious Charm. Combining iconic era with American Golden Age style for a clean, confident look with refined edge.' },
+            { id:5,  name:'FADE',                category:'regular haircut',  price:300, emoji:'⚡', description:'Sharp and Clean. Smooth transition from short to shorter sides, perfect for precision and style in one cut.' },
+            { id:6,  name:'UNDERCUT',            category:'regular haircut',  price:300, emoji:'🎯', description:'Bold Definition. Classic style with dramatic contrast, making a statement with clean, sharp lines and modern appeal.' },
+            { id:7,  name:'CREW CUT',            category:'regular haircut',  price:280, emoji:'🎖️', description:'Classic & Timeless. Short, clean, and professional - the ultimate versatile haircut for all occasions.' },
+            { id:8,  name:'HOOLIGAN CUT',        category:'haircut and shave',price:380, emoji:'🎪', description:'Versatile Canvas. Classic cut with a clean straight-razor shave — confidence in every detail.' },
+            { id:9,  name:'BUGSY CUT',           category:'haircut and shave',price:380, emoji:'🌟', description:'Outlined Edge, Effortless Style. Slicked-back cut paired with a precision shave for a polished finish.' },
+            { id:10, name:'SLICK BACK',          category:'haircut and shave',price:380, emoji:'💎', description:'Sophisticated Elegance. Sleek cut plus full straight-razor shave — perfect for formal occasions.' },
+            { id:11, name:'PROFESSIONAL',        category:'haircut and shave',price:350, emoji:'💼', description:'Business Ready. Clean executive cut with a smooth shave — the complete grooming package for the workplace.' },
+            { id:12, name:'TEXTURED TOP',        category:'haircut and shave',price:350, emoji:'🌊', description:'Modern Texture. Layered textured cut on top paired with a clean fade and precision shave on the sides.' },
+            { id:13, name:'HOME REGULAR CUT',    category:'home service',     price:450, emoji:'🏠', description:'Classic haircut delivered to your doorstep. All tools and products brought to you — no travel required.' },
+            { id:14, name:'HOME FADE',           category:'home service',     price:500, emoji:'🚗', description:'Premium fade service at home. Our barber comes to you with full equipment for a sharp fade finish.' },
+            { id:15, name:'HOME HAIRCUT + SHAVE',category:'home service',     price:550, emoji:'🛋️', description:'Complete grooming at your own comfort zone. Haircut and straight-razor shave, delivered at home.' },
+            { id:16, name:'HOME PREMIUM PACKAGE',category:'home service',     price:650, emoji:'👑', description:'The full VIP experience at home. Cut, shave, and styling with premium products — all at your door.' }
         ];
-        // ============ END HAIRSTYLES DATABASE ============
 
-        // Merge with admin overrides stored in localStorage
         function loadHairstyles() {
-            // Safe: KertDB may not be ready yet, fall back to localStorage or empty
             let raw = null;
             try { raw = (typeof KertDB !== 'undefined') ? KertDB.getItem('kertHairstyles') : localStorage.getItem('kertHairstyles'); } catch(e) {}
             const saved = raw ? JSON.parse(raw) : [];
@@ -2764,9 +2523,7 @@
         }
         let hairstylesData = loadHairstyles();
 
-        // ============================================================
-        // FIREBASE CONFIG — fill in your own project values
-        // ============================================================
+        // ============ FIREBASE CONFIG ============
         const FIREBASE_CONFIG = {
             apiKey:            "AIzaSyDesMBn0S2_mKQwT-dcHP6oSanntLrlsn8",
             authDomain:        "roch-1ec06.firebaseapp.com",
@@ -2777,9 +2534,7 @@
             appId:             "1:619772569023:web:579568ddd6b108e2e52d0a"
         };
 
-        // ============================================================
-        // KERTDB — Global database wrapper (Firebase + localStorage fallback)
-        // ============================================================
+        // ============ KERTDB ============
         const KERT_DB_KEYS = ['users','bookings','staff','bannedUsers','schedule','vacationDates','kertHairstyles','kertGcash','deletedAccounts'];
 
         const KertDB = {
@@ -2789,24 +2544,20 @@
             _useFirebase: false,
 
             async init() {
-                // Skip Firebase on local file://
                 if (window.location.protocol === 'file:') {
                     this._useFirebase = false;
                     this._loadFromLocal();
                     this._ready = true;
                     return;
                 }
-                // Try Firebase with strict timeouts
                 const _timeout = ms => new Promise((_, r) => setTimeout(() => r(new Error('timeout')), ms));
                 try {
                     if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
                     this._fb = firebase.database();
-                    // Connection test — 3 seconds max
                     await Promise.race([
                         this._fb.ref('.info/connected').once('value'),
                         _timeout(3000)
                     ]);
-                    // Load all keys — 4 seconds max
                     await Promise.race([this._loadAll(), _timeout(4000)]);
                     this._useFirebase = true;
                 } catch(e) {
@@ -2875,7 +2626,6 @@
             }
         };
 
-        // ============ BUILD servicePrices DYNAMICALLY FROM hairstylesData ============
         const servicePrices = {};
         hairstylesData.forEach(h => { servicePrices[h.name] = h.price; });
 
@@ -2888,18 +2638,14 @@
         let selectedPayment = null;
 
         window.onload = async function() {
-            // Init Firebase / localStorage
             await KertDB.init();
 
-            // Load shared data from KertDB cache
-            // Firebase stores JS arrays as objects — convert back to arrays
             const _toArr = v => { const p = JSON.parse(v || 'null'); if (!p) return []; return Array.isArray(p) ? p : Object.values(p); };
             users         = _toArr(KertDB.getItem('users'));
             bookings      = _toArr(KertDB.getItem('bookings'));
             bannedUsers   = _toArr(KertDB.getItem('bannedUsers'));
             vacationDates = _toArr(KertDB.getItem('vacationDates'));
 
-            // Hide loading overlay
             const overlay = document.getElementById('kertLoadingOverlay');
             if (overlay) overlay.style.display = 'none';
 
@@ -2923,7 +2669,6 @@
                 }
             }
 
-            // Start real-time listeners (Firebase only)
             setupFirebaseListeners();
         };
 
@@ -2940,11 +2685,7 @@
             document.getElementById('registerError').classList.remove('show');
         }
 
-        // ── OTP ENGINE (Email Verification) ──────────────────────────────────────
-
-
-
-        // OTP state
+        // ── OTP ENGINE ──────────────────────────────────────────────────────
         let _otpCode        = '';
         let _otpPending     = null;
         let _otpExpiry      = 0;
@@ -2961,7 +2702,6 @@
             if (submitBtn) { submitBtn.textContent = 'Checking...'; submitBtn.disabled = true; }
 
             try {
-                // Get freshest users — try Firebase (1.5s max) then fallback to cache / localStorage
                 let allUsers  = Array.isArray(users) ? [...users] : Object.values(users || {});
                 let allBanned = Array.isArray(bannedUsers) ? [...bannedUsers] : Object.values(bannedUsers || {});
 
@@ -2983,20 +2723,17 @@
                     } catch(fe) { /* use cache */ }
                 }
 
-                // Always re-read localStorage as final fallback (catches freshly registered users)
                 if (allUsers.length === 0) {
                     try {
                         const raw = localStorage.getItem('users');
                         if (raw) { const p = JSON.parse(raw); allUsers = Array.isArray(p) ? p : Object.values(p); }
                     } catch(e_ls) {}
                 } else {
-                    // Merge with localStorage in case a new user was just registered locally
                     try {
                         const raw = localStorage.getItem('users');
                         if (raw) {
                             const lsUsers = JSON.parse(raw);
                             const lsArr   = Array.isArray(lsUsers) ? lsUsers : Object.values(lsUsers);
-                            // Add any users in localStorage that aren't in allUsers
                             lsArr.forEach(u => {
                                 if (u && u.email && !allUsers.some(x => x.email === u.email)) allUsers.push(u);
                             });
@@ -3011,14 +2748,12 @@
 
             if (submitBtn) { submitBtn.textContent = 'Login'; submitBtn.disabled = false; }
 
-            // ── Ban check ────────────────────────────────
             const isBanned = bannedUsers.some(b => b && b.email && b.email.toLowerCase() === email);
             if (isBanned) {
                 errorDiv.textContent = '\u{1F6AB} Your account has been banned. Contact support.';
                 errorDiv.classList.add('show'); return;
             }
 
-            // ── Deleted check ─────────────────────────────
             try {
                 const delRaw = KertDB.getItem('deletedAccounts') || localStorage.getItem('deletedAccounts');
                 if (delRaw) {
@@ -3030,7 +2765,6 @@
                 }
             } catch(e_del) {}
 
-            // ── Credential check ─────────────────────────
             const user = users.find(u => u && u.email && u.email.toLowerCase() === email && u.password === password);
             if (user) {
                 currentUser = user;
@@ -3070,7 +2804,6 @@
 
                 if (submitBtn) { submitBtn.textContent = 'Sending OTP...'; submitBtn.disabled = true; }
 
-                // Pull latest users
                 let allUsers = [];
                 try { const c = KertDB._cache['users']; if (c) allUsers = Array.isArray(c) ? c : Object.values(c); } catch(e1) {}
                 if (allUsers.length === 0) {
@@ -3094,18 +2827,17 @@
                     errorDiv.classList.add('show'); return;
                 }
 
-                // Generate OTP & send email
                 _otpCode   = String(Math.floor(100000 + Math.random() * 900000));
                 _otpExpiry = Date.now() + 5 * 60 * 1000;
                 _otpPending = { name, email, phone, password };
 
-                // Send OTP email
+                // Send OTP via Gmail
                 try {
                     await sendOTPEmail(email, name, _otpCode);
                 } catch(emailErr) {
                     console.warn('[KERT] Email error:', emailErr.message);
-                    // Still show OTP page — on file:// we show code directly on screen
                 }
+
                 showOTPPage(email);
 
             } catch(err) {
@@ -3117,31 +2849,35 @@
         }
 
         // ═══════════════════════════════════════════════════════
-        // PASTE YOUR GOOGLE APPS SCRIPT URL BELOW 👇
+        // GOOGLE APPS SCRIPT URL  ← THIS WAS THE BUG (missing assignment)
         // ═══════════════════════════════════════════════════════
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJX6QyTis1TuYX46D543FZzmzLYcWsuLfPVsaZR4VPi_c_FqHTaAS4yql2-UfO16h0/exec';
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyCl20tFt9hTky32T5VuWJDaXnlnpM79bQbL447WzBJuBUdyciqYgnJ4cv_dVObeCcE/exec';
 
         async function sendOTPEmail(toEmail, toName, otp) {
-            if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbyJ4ZEeWBFwKtH8_aqTI5oiot3u1HuyUNg6biTWDwm8n7pcex8fMklHZrCBl9VMc6dx/exec') {
-                throw new Error('Google Apps Script URL not configured. Please set GOOGLE_SCRIPT_URL in auth.html.');
-            }
-            // Use no-cors so it works from BOTH file:// and GitHub Pages
-            // The email will still send — no-cors just means we can't read the response
-            await fetch(GOOGLE_SCRIPT_URL, {
-                method:  'POST',
-                mode:    'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ to: toEmail, name: toName, otp: otp })
+            if (!GOOGLE_SCRIPT_URL) throw new Error('Google Apps Script URL not configured.');
+            const url = GOOGLE_SCRIPT_URL
+                + '?to='   + encodeURIComponent(toEmail)
+                + '&name=' + encodeURIComponent(toName)
+                + '&otp='  + encodeURIComponent(otp);
+            return new Promise(function(resolve) {
+                var img = new Image();
+                var done = false;
+                var finish = function() { if (!done) { done = true; resolve({ success: true }); } };
+                img.onload  = finish;
+                img.onerror = finish;
+                img.src = url;
+                setTimeout(finish, 8000);
             });
-            // no-cors always returns opaque — assume success if no exception thrown
-            return { success: true };
         }
 
         function showOTPPage(email) {
             document.getElementById('registerPage').classList.add('hidden');
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('otpPage').classList.remove('hidden');
-            const _badge = document.getElementById('otpEmailBadge') || document.getElementById('otpEmailDisplay'); if (_badge) _badge.textContent = email;
+
+            const _badge = document.getElementById('otpEmailBadge');
+            if (_badge) _badge.textContent = email;
+
             const errDiv = document.getElementById('otpError');
             errDiv.style.cssText = '';
             errDiv.classList.remove('show');
@@ -3150,7 +2886,9 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJX6QyTis1Tu
                 const el = document.getElementById('otp' + i);
                 if (el) { el.value = ''; el.classList.remove('filled'); }
             }
+
             setTimeout(() => { const f = document.getElementById('otp0'); if (f) f.focus(); }, 120);
+
             startOTPTimer();
         }
 
@@ -3158,7 +2896,6 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJX6QyTis1Tu
             clearInterval(_otpTimerHandle);
             const resendBtn = document.getElementById('otpResendBtn');
             if (resendBtn) resendBtn.disabled = true;
-            // Support both old (#otpTimer div) and new (#otpTimerDisplay span) layouts
             const timerEl  = document.getElementById('otpTimerDisplay') || document.getElementById('otpCountdown');
             const timerRow = document.getElementById('otpTimer');
             if (timerEl) timerEl.classList.remove('expired');
@@ -3188,12 +2925,10 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJX6QyTis1Tu
                 _otpExpiry = Date.now() + 5 * 60 * 1000;
                 await sendOTPEmail(_otpPending.email, _otpPending.name, _otpCode);
                 if (btn) btn.textContent = '✓ Sent!';
-                const timerDiv = document.getElementById('otpTimer');
                 const timerEl2 = document.getElementById('otpTimerDisplay');
-                if (timerDiv) timerDiv.innerHTML = 'Code expires in <span id="otpCountdown">5:00</span>';
                 if (timerEl2) { timerEl2.textContent = '5:00'; timerEl2.classList.remove('expired'); }
+
                 startOTPTimer();
-                // Clear inputs
                 for (let i = 0; i < 6; i++) {
                     const el = document.getElementById('otp' + i);
                     if (el) { el.value = ''; el.classList.remove('filled'); }
@@ -3226,7 +2961,6 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJX6QyTis1Tu
             }
         }
 
-        // Wire OTP input handlers (new HTML has no inline oninput/onkeydown)
         (function setupOTPInputs() {
             for (let i = 0; i < 6; i++) {
                 const box = document.getElementById('otp' + i);
@@ -3272,7 +3006,6 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJX6QyTis1Tu
             const { name, email, phone, password } = _otpPending;
             const newUser = { id: Date.now(), name, email, phone, password, createdAt: new Date().toLocaleString() };
             users.push(newUser);
-            // Save everywhere immediately
             try { localStorage.setItem('users', JSON.stringify(users)); } catch(e4) {}
             try { KertDB._cache['users'] = users; } catch(e_cache) {}
             try { KertDB.setItem('users', JSON.stringify(users)); } catch(e5) {}
@@ -3280,7 +3013,6 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJX6QyTis1Tu
             _otpPending = null; _otpCode = '';
             if (btn) { btn.textContent = '\u2713 Verify & Create Account'; btn.disabled = false; }
 
-            // Show success then go to login
             const existing = document.getElementById('otpSuccessPopup');
             if (existing) existing.remove();
             const popup = document.createElement('div');
@@ -3303,7 +3035,6 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJX6QyTis1Tu
             document.getElementById('otpPage').classList.add('hidden');
             switchToRegister();
         }
-
 
         function showMainSite() {
             document.getElementById('loginPage').classList.add('hidden');
@@ -3329,7 +3060,6 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJX6QyTis1Tu
                 setupVacationDatePicker();
                 document.getElementById('priceDisplay').textContent = '₱0';
                 document.getElementById('serviceType').value = '';
-                // Reset service picker trigger label
                 const label = document.getElementById('servicePickerLabel');
                 if (label) label.textContent = '✂️ Choose a service...';
                 const trigger = document.getElementById('servicePickerTrigger');
@@ -3341,7 +3071,6 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJX6QyTis1Tu
 
         // ============ HAIRSTYLES FUNCTIONS ============
         function renderHairstyles(category) {
-            // Always re-load latest data (admin may have updated)
             hairstylesData = loadHairstyles();
             const grid = document.getElementById('hairstylesGrid');
             let filtered = hairstylesData;
@@ -3372,21 +3101,17 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJX6QyTis1Tu
             renderHairstyles(category);
         }
 
-        // ← Pre-selects the chosen hairstyle via the service picker modal
         function bookWithStyle(styleName) {
             showSection('booking');
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.classList.remove('active');
                 if (link.getAttribute('data-section') === 'booking') link.classList.add('active');
             });
-            // Find the hairstyle data and auto-confirm it
             const h = hairstylesData.find(x => x.name === styleName);
             if (h) {
                 setTimeout(() => spmConfirmService(h.name, h.price, h.emoji), 50);
             }
         }
-
-        // ============ END HAIRSTYLES FUNCTIONS ============
 
         function setupVacationDatePicker() {
             vacationDates = JSON.parse(KertDB.getItem('vacationDates')) || [];
@@ -3795,7 +3520,6 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJX6QyTis1Tu
             bookings.push(booking);
             KertDB.setItem('bookings', JSON.stringify(bookings));
 
-            // Show custom confirmation modal
             showBookingConfirmed(booking);
 
             document.querySelector('#booking form').reset();
@@ -3907,7 +3631,6 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJX6QyTis1Tu
         function performLogout() {
             currentUser = null;
             localStorage.removeItem('currentUser');
-            // Reload auth.html (stay on same page, show login) — DO NOT go to index.html (admin!)
             window.location.href = 'public-index.html';
         }
 
@@ -3973,13 +3696,11 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJX6QyTis1Tu
         function spmConfirmService(name, price, emoji) {
             document.getElementById('serviceType').value = name;
             const label = document.getElementById('servicePickerLabel');
-            if (label) label.textContent = emoji + ' ' + name + ' — &#8369;' + price;
-            label.innerHTML = `${emoji} ${name} &mdash; &#8369;${price}`;
+            if (label) label.innerHTML = `${emoji} ${name} &mdash; &#8369;${price}`;
             const trigger = document.getElementById('servicePickerTrigger');
             if (trigger) trigger.classList.add('selected');
             const priceDisplay = document.getElementById('priceDisplay');
-            if (priceDisplay) priceDisplay.textContent = '&#8369;' + price.toLocaleString('en-PH');
-            priceDisplay.innerHTML = '&#8369;' + price.toLocaleString('en-PH');
+            if (priceDisplay) priceDisplay.innerHTML = '&#8369;' + price.toLocaleString('en-PH');
             closeServicePicker();
         }
 
@@ -3987,10 +3708,9 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJX6QyTis1Tu
             const modal = document.getElementById('servicePickerModal');
             if (modal && e.target === modal) closeServicePicker();
         });
-        // ============ END SERVICE PICKER ============
+
         // ============ BOOKING CONFIRMED MODAL FUNCTIONS ============
         function showBookingConfirmed(booking) {
-            // Populate detail rows
             document.getElementById('bcService').textContent  = booking.service || '—';
             document.getElementById('bcDate').textContent     = new Date(booking.date).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
             document.getElementById('bcTime').textContent     = booking.time || '—';
@@ -4014,7 +3734,6 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJX6QyTis1Tu
             const modal = document.getElementById('bookingConfirmedModal');
             if (modal && e.target === modal) closeBookingConfirmed();
         });
-        // ============ END BOOKING CONFIRMED MODAL FUNCTIONS ============
 
         // ============ GCASH MODAL FUNCTIONS ============
         let _gcashCountdownTimer = null;
@@ -4136,11 +3855,8 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJX6QyTis1Tu
         document.getElementById('gcashModal').addEventListener('click', function(e) {
             if (e.target === this) closeGcashModal();
         });
-        // ============ END GCASH MODAL FUNCTIONS ============
 
-        // ============================================================
-        // REAL-TIME ADMIN WATCHER — Firebase push notifications
-        // ============================================================
+        // ============ REAL-TIME ADMIN WATCHER ============
         const _watchKeys = {
             kertHairstyles:  { icon: '💇', label: 'Hairstyles Updated',     msg: 'Admin updated the hairstyle menu. Refreshed.' },
             schedule:        { icon: '⏰', label: 'Schedule Changed',        msg: 'Shop schedule updated. New time slots available.' },
@@ -4190,7 +3906,6 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJX6QyTis1Tu
                 });
             });
 
-            // Real-time bookings sync
             KertDB.onValue('bookings', function(val) {
                 if (!_watchReady) return;
                 bookings = val || [];
@@ -4201,7 +3916,6 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJX6QyTis1Tu
         }
 
         function showAdminUpdatePopup(icon, title, message, onClose) {
-            // Only one popup at a time
             if (document.getElementById('adminUpdatePopup')) return;
 
             const popup = document.createElement('div');
@@ -4221,12 +3935,9 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJX6QyTis1Tu
                     box-shadow:0 30px 80px rgba(255,215,0,0.2);
                     animation:confirmedBounce 0.45s cubic-bezier(0.34,1.56,0.64,1);
                 ">
-                    <!-- shimmer bar -->
                     <div style="position:absolute;top:0;left:0;right:0;height:5px;border-radius:28px 28px 0 0;
                         background:linear-gradient(90deg,#FFD700,#FFA500,#FFD700);
                         background-size:200%;animation:shimmer 2s linear infinite;"></div>
-
-                    <!-- icon ring -->
                     <div style="
                         width:85px;height:85px;border-radius:50%;margin:0.5rem auto 1.6rem;
                         background:rgba(255,215,0,0.1);border:2.5px solid #FFD700;
@@ -4234,19 +3945,15 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJX6QyTis1Tu
                         font-size:2.6rem;box-shadow:0 0 30px rgba(255,215,0,0.25);
                         animation:bc-pop 0.4s 0.1s cubic-bezier(0.34,1.56,0.64,1) both;
                     ">${icon}</div>
-
                     <div style="
                         font-family:'Playfair Display',serif;font-size:1.7rem;
                         font-weight:800;color:#FFD700;margin-bottom:0.6rem;
                         animation:fadeIn 0.4s 0.2s both;
                     ">${title}</div>
-
                     <div style="
                         color:#b0b0b0;font-size:0.93rem;line-height:1.75;
                         margin-bottom:2rem;animation:fadeIn 0.4s 0.3s both;
                     ">${message}</div>
-
-                    <!-- badge -->
                     <div style="
                         display:inline-flex;align-items:center;gap:0.5rem;
                         background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);
@@ -4254,7 +3961,6 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJX6QyTis1Tu
                         font-weight:700;color:#FFD700;margin-bottom:1.8rem;
                         animation:fadeIn 0.4s 0.35s both;
                     ">🔔 Live Update from Admin</div>
-
                     <button onclick="closeAdminUpdatePopup()" style="
                         width:100%;padding:1rem;
                         background:linear-gradient(135deg,#FFD700,#FFA500);
@@ -4272,10 +3978,7 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJX6QyTis1Tu
                 </div>
             `;
 
-            // Store callback
             popup._onClose = onClose;
-
-            // Close on backdrop click
             popup.addEventListener('click', function(e) {
                 if (e.target === popup) closeAdminUpdatePopup();
             });
@@ -4288,7 +3991,7 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJX6QyTis1Tu
             const popup = document.getElementById('adminUpdatePopup');
             if (!popup) return;
             const cb = popup._onClose;
-                popup.remove();
+            popup.remove();
             document.body.style.overflow = 'auto';
             if (typeof cb === 'function') { cb(); cb._onClose = null; }
         }
@@ -4364,8 +4067,6 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJX6QyTis1Tu
             document.body.appendChild(popup);
             document.body.style.overflow = 'hidden';
         }
-        // ============ END DELETED ACCOUNT POPUP ============
-
     </script>
 </body>
 </html>
